@@ -1,0 +1,31 @@
+{% extends "index.html" %}
+
+{% block description %}
+    {{ page.description }}
+{% endblock description %}
+
+{% block content %}
+    <div class="post">
+        <div class="post__title">
+            <h1>{{ page.title | safe }}</h1>
+            <div class="post__meta">
+                {% if page.date %}{{ page.date | date(format="%Y-%m-%d") }}{% endif %}
+                {% if page.extra.updated %}(last updated: {{ page.extra.updated | date(format="%Y-%m-%d") }}){% endif %}
+            </div>
+
+            <hr />
+
+           {% if page.taxonomies.tags %}
+               <ul class="post__tags">
+                   {% for tag in page.taxonomies.tags %}
+                       <li class="post__tag"><a href="{{ get_taxonomy_url(kind="tags", name=tag) | safe }}">#{{ tag }}</a></li>
+                   {% endfor %}
+               </ul>
+           {% endif %}
+        </div>
+
+        <div class="post__body">
+            {{ page.content | safe }}
+        </div>
+    </div>
+{% endblock content %}

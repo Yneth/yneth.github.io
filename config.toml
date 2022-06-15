@@ -1,0 +1,24 @@
+title = "Yneth Blog"
+base_url = "https://yneth.github.io"
+description = "Yneth blog"
+
+generate_feed = true
+feed_filename = "rss.xml"
+
+compile_sass = true
+
+taxonomies = [
+    {name = "tags", feed = true},
+]
+
+[markdown]
+highlight_code = true
+highlight_theme = "cheerfully-light"
+
+[link_checker]
+skip_anchor_prefixes = [
+    "https://github.com/",
+]
+
+[extra]
+author = "Anthony (Yneth)"
