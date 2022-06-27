@@ -1,31 +1,42 @@
 {% extends "index.html" %}
 
 {% block description %}
-    {{ page.description }}
+{{ page.description }}
 {% endblock description %}
 
 {% block content %}
-    <div class="post">
-        <div class="post__title">
-            <h1>{{ page.title | safe }}</h1>
-            <div class="post__meta">
-                {% if page.date %}{{ page.date | date(format="%Y-%m-%d") }}{% endif %}
-                {% if page.extra.updated %}(last updated: {{ page.extra.updated | date(format="%Y-%m-%d") }}){% endif %}
-            </div>
+<article class="post">
+	<div class="post__title">
+		<h1>{{ page.title | safe }}</h1>
+		<div class="post__meta">
+			{% if page.date %}{{ page.date | date(format="%Y-%m-%d") }}{% endif %}
+			{% if page.extra.updated %}(last updated: {{ page.extra.updated | date(format="%Y-%m-%d") }}){% endif %}
+		</div>
 
-            <hr />
+		<hr />
 
-           {% if page.taxonomies.tags %}
-               <ul class="post__tags">
-                   {% for tag in page.taxonomies.tags %}
-                       <li class="post__tag"><a href="{{ get_taxonomy_url(kind="tags", name=tag) | safe }}">#{{ tag }}</a></li>
-                   {% endfor %}
-               </ul>
-           {% endif %}
-        </div>
+		{% if page.taxonomies.tags %}
+		<ul class="post__tags">
+			{% for tag in page.taxonomies.tags %}
+			<li class="post__tag"><a href="{{ get_taxonomy_url(kind="tags", name=tag) | safe }}">#{{ tag }}</a></li>
+			{% endfor %}
+		</ul>
+		{% endif %}
+	</div>
 
-        <div class="post__body">
-            {{ page.content | safe }}
-        </div>
-    </div>
+	<div class="post__body">
+		{{ page.content | safe }}
+	</div>
+
+	<section>
+		<h2>Comments</h2>
+		<script src="https://utteranc.es/client.js"
+				repo="yneth/yneth.github.io"
+				issue-term="pathname"
+				theme="github-light"
+				crossorigin="anonymous"
+				async>
+		</script>
+	</section>
+</article>
 {% endblock content %}
