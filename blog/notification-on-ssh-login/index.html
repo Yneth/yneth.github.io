@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="
+
+">
+        <meta name="author" content="Anthony (Yneth)">
+        <title>Yneth Blog</title>
+        <link rel="stylesheet" href="https://yneth.github.io/site.css?h=0c8a5a29fad6508325cd0dd43581b589896034f9279006d65606f05c59150afb" />
+        <link rel="shortcut icon" type="image/png" href="https://yneth.github.io/favicon.png"/>
+        <link href="https://yneth.github.io/rss.xml" rel="feed" type="application/rss+xml" title="Yneth Blog" />
+        <!-- Google Tag Manager -->
+        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                    })(window,document,'script','dataLayer','GTM-5G27JJJ');</script>
+        <!-- End Google Tag Manager -->
+    </head>
+    <body>
+        <!-- Google Tag Manager (noscript) -->
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5G27JJJ"
+                          height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+        <!-- End Google Tag Manager (noscript) -->
+
+        <header id="header">
+            <h1 class="logo"><a href="/">Yneth</a></h1>
+            <ul>
+                <li><a href="/blog/">Blog</a></li>
+                <li><a href="/tags/">Tags</a></li>
+            </ul>
+        </header>
+
+        <div id="content">
+            
+<article class="post">
+	<div class="post__title">
+		<h1>notification on ssh session</h1>
+		<div class="post__meta">
+			2022-03-09
+			
+		</div>
+
+		<hr />
+
+		
+		<ul class="post__tags">
+			
+			<li class="post__tag"><a href="https://yneth.github.io/tags/bash/">#bash</a></li>
+			
+			<li class="post__tag"><a href="https://yneth.github.io/tags/ssh/">#ssh</a></li>
+			
+			<li class="post__tag"><a href="https://yneth.github.io/tags/telegram/">#telegram</a></li>
+			
+		</ul>
+		
+	</div>
+
+	<div class="post__body">
+		<p>Before executing script make sure <code>/etc/profile</code> runs scripts from <code>/etc/profile.d</code> and
+do not forget to replace all required variables for telegram API.</p>
+<pre style="background-color:#f5f5f5;color:#1f1f1f;"><code><span>cat &lt;&lt;EOF &gt; /etc/profile.d/ssh_notif.sh
+</span><span>#!/bin/sh
+</span><span>caller=&quot;\$(ps -o comm= \$PPID)&quot;
+</span><span>if [ &quot;sshd&quot; = &quot;\$caller&quot; ]; then
+</span><span>  BOT_TOKEN=&#39;&lt;YOUR_TOKEN_HERE&gt;&#39;
+</span><span>  CHAT_ID=&#39;&lt;YOUR_CHAT_ID_HERE&gt;&#39;
+</span><span>  MESSAGE=&#39;login&#39;
+</span><span>  curl &quot;https://api.telegram.org/bot\$BOT_TOKEN/sendMessage&quot; \
+</span><span>    -H &#39;Content-Type: application/json&#39; \
+</span><span>    -d &quot;{&quot;\&quot;&quot;chat_id&quot;\&quot;&quot;: \$CHAT_ID, &quot;\&quot;&quot;text&quot;\&quot;&quot;: &quot;\&quot;&quot;\$MESSAGE&quot;\&quot;&quot;}&quot; &amp;&gt; /dev/null &amp;
+</span><span>fi
+</span><span>EOF
+</span><span>chmod +x /etc/profile.d/ssh_notif.sh
+</span></code></pre>
+
+	</div>
+
+	<section>
+		<h2>Comments</h2>
+		<script src="https://utteranc.es/client.js"
+				repo="yneth/yneth.github.io"
+				issue-term="pathname"
+				theme="github-light"
+				crossorigin="anonymous"
+				async>
+		</script>
+	</section>
+</article>
+
+        </div>
+    </body>
+</html>
