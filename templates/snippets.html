@@ -1,10 +1,10 @@
 {% extends "index.html" %}
 
-{% block description %}Yneth blog{% endblock description %}
+{% block description %}Yneth snippets{% endblock description %}
 
 {% block content %}
-    <section class="mt-8 md:w-96 w-full">
-        <h1 class="font-bold text-xl">All posts</h1>
+    <section class="mt-8 md:w-96">
+        <h1 class="font-bold text-xl">All snippets</h1>
         {% for year, posts in section.pages | group_by(attribute="year") %}
             <h2 class="font-bold text-lg mt-4">{{ year }}</h2>
 

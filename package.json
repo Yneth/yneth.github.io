@@ -1,0 +1,27 @@
+{
+  "name": "snips",
+  "version": "1.0.0",
+  "description": "yneth blog",
+  "main": "index.js",
+  "scripts": {
+    "tailwind": "npx tailwindcss -i ./styles/styles.css -o ./static/styles.css",
+    "tailwind-watch": "npx tailwindcss -i ./styles/styles.css -o ./public/styles.css --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yneth/yneth.github.io.git"
+  },
+  "keywords": [
+    "blog"
+  ],
+  "author": "Anthony Bondarenko",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Yneth/yneth.github.io/issues"
+  },
+  "homepage": "https://github.com/Yneth/yneth.github.io#readme",
+  "dependencies": {
+    "tailwindcss": "^3.2.4"
+  }
+}

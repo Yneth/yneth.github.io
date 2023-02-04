@@ -1,8 +1,8 @@
 +++
-title = "vpn on remote linux machine"
+title = "how to setup vpn on remote linux machine"
 
 [taxonomies]
-tags = ["linux", "iproutes", "bash", "vpn"]
+tags = ["snippet", "linux", "iproutes", "bash", "vpn"]
 +++
 
 ```text
@@ -11,9 +11,9 @@ a.b.c.0/24 — public IP subnet
 x.x.x.1     — gateway
 ```
 
-To find gateway: `$ ip route | grep default`
+To find gateway: `ip route | grep default`
 
-```
+```bash
 ip rule add table 128 from a.b.c.d`
 ip route add table 128 to a.b.c.0/24 dev eth0
 ip route add table 128 default via x.x.x.1
@@ -24,7 +24,7 @@ and make sure table 128 is first after loopback in the rules.
 To check: `ip rule`
 
 To change order: 
-```
+```bash
 ip rule add pref YYY from a.b.c.d lookup 128
 ip rule del pref XXX from a.b.c.d lookup 128
 ```

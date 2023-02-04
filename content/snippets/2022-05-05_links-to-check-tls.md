@@ -2,7 +2,7 @@
 title = "links to test tls connection"
 
 [taxonomies]
-tags = ["tls"]
+tags = ["snippet", "tls"]
 +++
 
 Links: 

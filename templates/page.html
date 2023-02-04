@@ -1,42 +1,43 @@
 {% extends "index.html" %}
 
-{% block description %}
-{{ page.description }}
-{% endblock description %}
+{% block title %}{{ page.title | safe }}{% endblock title %}
+{% block description %}{{ page.description | safe }}{% endblock description %}
+{% block twitter_title %}{{ page.title | safe }}{% endblock twitter_title %}
+{% block twitter_description %}{{ page.description | safe }}{% endblock twitter_description %}
+{% block og_title %}{{ page.title | safe }}{% endblock og_title %}
+{% block og_description %}{{ page.description | safe }}{% endblock og_description %}
+
 
 {% block content %}
-<article class="post">
-	<div class="post__title">
-		<h1>{{ page.title | safe }}</h1>
-		<div class="post__meta">
-			{% if page.date %}{{ page.date | date(format="%Y-%m-%d") }}{% endif %}
-			{% if page.extra.updated %}(last updated: {{ page.extra.updated | date(format="%Y-%m-%d") }}){% endif %}
-		</div>
+    <article class="md:w-[48em] border-1 border-y border-black mt-8 py-2 w-full grow">
+        <h1>{{ page.title | safe }}</h1>
+        <div>
+            {% if page.date %}{{ page.date | date(format="%Y-%m-%d") }}{% endif %}
+            {% if page.extra.updated %}(last updated: {{ page.extra.updated | date(format="%Y-%m-%d") }}){% endif %}
+        </div>
 
-		<hr />
+        <hr/>
 
-		{% if page.taxonomies.tags %}
-		<ul class="post__tags">
-			{% for tag in page.taxonomies.tags %}
-			<li class="post__tag"><a href="{{ get_taxonomy_url(kind="tags", name=tag) | safe }}">#{{ tag }}</a></li>
-			{% endfor %}
-		</ul>
-		{% endif %}
-	</div>
+        {% if page.taxonomies.tags %}
+            <ul class="unstyled-list flex flex-row space-x-2">
+                {% for tag in page.taxonomies.tags %}
+                    <li><a href="{{ get_taxonomy_url(kind="tags", name=tag) | safe }}">#{{ tag }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
-	<div class="post__body">
-		{{ page.content | safe }}
-	</div>
+        <div class="mt-4">
+            {{ page.content | safe }}
+        </div>
+    </article>
 
-	<section>
-		<h2>Comments</h2>
-		<script src="https://utteranc.es/client.js"
-				repo="yneth/yneth.github.io"
-				issue-term="pathname"
-				theme="github-light"
-				crossorigin="anonymous"
-				async>
-		</script>
-	</section>
-</article>
+    <section class="w-full mt-8 py-2">
+        <script src="https://utteranc.es/client.js"
+                repo="yneth/yneth.github.io"
+                issue-term="pathname"
+                theme="github-light"
+                crossorigin="anonymous"
+                async>
+        </script>
+    </section>
 {% endblock content %}

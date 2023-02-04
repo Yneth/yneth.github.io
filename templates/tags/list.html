@@ -3,15 +3,15 @@
 {% block description %}Yneth tags{% endblock description %}
 
 {% block content %}
-    <div class="post-list">
-        <h1>Tags</h1>
+    <section class="mt-8 md:w-96 w-full">
+        <h1 class="font-bold text-xl">Tags</h1>
 
         {% if terms %}
-            <ul>
+            <ul class="ml-2 mt-4 unstyled-list">
                 {% for term in terms %}
-                    <li><a href="{{ term.permalink | safe }}">{{ term.name }}</a> ({{ term.pages | length }})</li>
+                    <li>* <a href="{{ term.permalink | safe }}">{{ term.name }}</a> ({{ term.pages | length }})</li>
                 {% endfor %}
             </ul>
         {% endif %}
-    </div>
+    </section>
 {% endblock content %}

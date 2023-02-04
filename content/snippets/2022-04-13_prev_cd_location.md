@@ -1,8 +1,8 @@
 +++
-title = "previous cd location"
+title = "jump to previous cd location"
 
 [taxonomies]
-tags = ["bash", "cd", "git"]
+tags = ["snippet", "bash", "cd", "git"]
 +++
 
 ```cd -``` similar to ```git checkout -```.

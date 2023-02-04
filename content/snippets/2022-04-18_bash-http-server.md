@@ -2,7 +2,7 @@
 title = "bash http server with fixed response"
 
 [taxonomies]
-tags = ["bash", "nc"]
+tags = ["snippet", "bash", "nc"]
 +++
 
 ```bash

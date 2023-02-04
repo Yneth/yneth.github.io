@@ -2,7 +2,7 @@
 title = "flush etc/hosts"
 
 [taxonomy]
-tags = ["bash", "hosts", "unix"]
+tags = ["snippet", "bash", "hosts", "unix"]
 +++
 
 Run `sudo dscacheutil -flushcache`

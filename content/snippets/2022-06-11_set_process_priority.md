@@ -1,8 +1,8 @@
 +++
-title = "set process priority"
+title = "how to set process priority"
 
 [taxonomies]
-tags = ["linux", "bash", "io", "nice"]
+tags = ["snippet", "linux", "bash", "ionice"]
 +++
 
 To check niceness: ```ps -eo pid,ppid,ni,comm```

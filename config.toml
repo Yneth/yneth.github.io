@@ -5,8 +5,6 @@ description = "Yneth blog"
 generate_feed = true
 feed_filename = "rss.xml"
 
-compile_sass = true
-
 taxonomies = [
     {name = "tags", feed = true},
 ]
