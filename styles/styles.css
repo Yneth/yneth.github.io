@@ -42,11 +42,6 @@
     padding: 0 0 0 30px;
 }
 
-.article__content p {
-    margin-block-start: 0.5em;
-    margin-block-end: 0.5em;
-}
-
 .article__content ol {
     list-style-type: decimal;
 }
@@ -102,6 +97,24 @@
     border: 1px solid black;
 }
 
+.article__content p {
+    margin-block-end: 1em;
+}
+
 .article__content p:has(+ ul) {
     margin-block-end: 0;
+}
+
+.article__content h1 ~ p {
+    margin-block-start: 0;
+}
+
+.article__content .note {
+    background-color: rgba(252, 255, 137, 0.6);
+    padding: 1em;
+}
+
+.article__content .alert {
+    background-color: rgba(255, 137, 137, 0.6);
+    padding: 1em;
 }

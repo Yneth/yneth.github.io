@@ -61,7 +61,7 @@ scale, uptime, data storage and security requirements.
 - Responsive | Low latency
     - As a user I want it to respond very fast so I could check stories of my friends without waiting.
 
-- Security [Stride](https://en.wikipedia.org/wiki/STRIDE_(security))
+- Security [(Stride)](https://en.wikipedia.org/wiki/STRIDE_(security))
     - Spoofing (Authenticity)
         - Can someone pretend to be someone else?
 

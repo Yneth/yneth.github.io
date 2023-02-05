@@ -15,9 +15,9 @@ to compile a list of my checks before publishing a pull-request.
 - API
     - correct status codes?
     - extendable object?
-     
-        using objects instead of plain lists or values allow you  
-        to extend requests or responses easier.  
+        <br>
+        using objects instead of plain lists or values allows you to extend requests or responses easier.  
+        <br>
         *BAD*:  
         ```  
         ["name1", "name"]  
