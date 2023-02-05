@@ -22,8 +22,9 @@
 
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="{% block twitter_title %}{{ config.title }}{% endblock twitter_title %}">
-    <meta name="twitter:description" content="{% block twitter_description %}{{ config.description }}{% endblock twitter_description %}">
-{#    <meta name="twitter:image" content="<%= process.env.ORIGIN %>assets/image.png">#}
+    <meta name="twitter:description"
+          content="{% block twitter_description %}{{ config.description }}{% endblock twitter_description %}">
+    {#    <meta name="twitter:image" content="<%= process.env.ORIGIN %>assets/image.png">#}
 
     <link rel="stylesheet" href="{{ get_url(path="styles.css", cachebust=true) }}"/>
 

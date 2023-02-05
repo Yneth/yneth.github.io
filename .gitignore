@@ -9,3 +9,5 @@ npm-debug.log
 site/static/app.css
 public/
 .DS_Store
+
+static/styles.css
