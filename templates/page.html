@@ -19,7 +19,7 @@
         <hr/>
 
         {% if page.taxonomies.tags %}
-            <ul class="unstyled-list flex flex-row flex-wrap gap-x-2">
+            <ul class="flex flex-row flex-wrap gap-x-2">
                 {% for tag in page.taxonomies.tags %}
                     <li><a href="{{ get_taxonomy_url(kind="tags", name=tag) | safe }}">#{{ tag }}</a></li>
                 {% endfor %}

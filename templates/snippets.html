@@ -8,7 +8,7 @@
         {% for year, posts in section.pages | group_by(attribute="year") %}
             <h2 class="font-bold text-lg mt-4">{{ year }}</h2>
 
-            <ul class="ml-2 space-y-1 unstyled-list">
+            <ul class="ml-2 space-y-1">
                 {% for post in posts %}
                     <li>* <a href="{{ post.permalink }}">{{ post.title }}</a></li>
                 {% endfor %}
