@@ -49,7 +49,7 @@
 </head>
 
 
-<body class="flex flex-col h-screen p-4">
+<body class="flex flex-col min-h-screen p-4">
 
 <!-- Google Tag Manager (noscript) -->
 <noscript>
@@ -72,9 +72,12 @@
 
 </header>
 
-<main class="grow flex flex-col items-center mb-32 md:mb-64">
+<main class="grow flex flex-col items-center h-full">
     {% block content %}
-        <section class="flex flex-col justify-evenly m-auto md:h-[20rem] md:w-[32rem] md:border md:border-2 md:border-black">
+        <section class="absolute top-1/2 left-1/2 md:top-[40%] transform -translate-x-1/2 -translate-y-1/2
+        w-full
+        flex flex-col justify-evenly
+        md:h-[20rem] md:w-[32rem] md:border md:border-2 md:border-black">
 
             <h1 class="text-center text-2xl font-bold">Anthony Bondarenko</h1>
 
