@@ -189,16 +189,19 @@ Describe the APIs you are going to design.
 Taken from [Calculator per year by google developer](https://colin-scott.github.io/personal_website/research/interactive_latency.html)
 
 ## Availability numbers
----
 
+<div class="overflow-x-auto">
+
+---
 | Availability % | Downtime per day | Downtime per week | Downtime per month | Downtime per year |
 |:---------------|:-----------------|:------------------|:-------------------|:------------------|
 | 99%            | 14.40 minutes    | 1.68 hours        | 7.31 hours         | 3.65 days         |
 | 99.99%         | 8.64 seconds     | 1.01 minutes      | 4.38 minutes       | 52.6 minutes      |
 | 99.999%        | 864 ms           | 6.05 seconds      | 26.30 seconds      | 5.26 minutes      |
 | 99.9999%       | 86.40 ms         | 604.8 ms          | 2.64 seconds       | 31.56 seconds     |
-
 ---
+
+</div>
 
 # Tips
 

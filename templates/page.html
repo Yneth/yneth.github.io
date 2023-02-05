@@ -9,7 +9,7 @@
 
 
 {% block content %}
-    <article class="md:w-[48em] border-1 border-y border-black mt-8 py-2 w-full grow">
+    <article class="md:w-[48em] border-1 border-y border-black mt-8 py-2 w-full grow whitespace-normal">
         <h1>{{ page.title | safe }}</h1>
         <div>
             {% if page.date %}{{ page.date | date(format="%Y-%m-%d") }}{% endif %}
@@ -19,14 +19,14 @@
         <hr/>
 
         {% if page.taxonomies.tags %}
-            <ul class="unstyled-list flex flex-row space-x-2">
+            <ul class="unstyled-list flex flex-row flex-wrap gap-x-2">
                 {% for tag in page.taxonomies.tags %}
                     <li><a href="{{ get_taxonomy_url(kind="tags", name=tag) | safe }}">#{{ tag }}</a></li>
                 {% endfor %}
             </ul>
         {% endif %}
 
-        <div class="mt-4">
+        <div class="article__content mt-4">
             {{ page.content | safe }}
         </div>
     </article>
