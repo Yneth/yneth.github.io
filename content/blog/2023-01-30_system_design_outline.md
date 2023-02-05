@@ -94,7 +94,8 @@ This step helps to answer questions:
 * how many cache nodes to use?
 * can be used for cost counting
 
-- Load (Traffic)
+It is better to define in the following order:
+- Load
 
   - `QPS` - queries per second, as if how many times user want to ask system a specific question
 or to do specific task.
@@ -113,22 +114,17 @@ suggestion, static asset and other requests, thus it is always greater or equal 
 
 - Storage
 
-  - how your model looks like?
+  - how your model looks like? calculate the size in bytes.
   - how much storage will it take?
       - for one day
+      - for one month
       - for 5 years
 
-- Bandwidth
-
-  - amount of bandwidth per one day?
-      - read traffic  
-      - write traffic  
-  
 - Cache requirements
 
   - how much GB per day?
   - how many machines needed to store your cache?
-      - for example you have 3TB of cache   
+      - for example, you have 3TB of cache   
         and single machine is able to store 150GB  
         then you would need 20 servers to handle the load
 
