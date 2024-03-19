@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Yneth Blog - ionice</title>
+      <link>https://yneth.github.io</link>
+      <description>Yneth blog</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://yneth.github.io/tags/ionice/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Sat, 11 Jun 2022 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>how to set process priority</title>
+          <pubDate>Sat, 11 Jun 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/set-process-priority/</link>
+          <guid>https://yneth.github.io/snippets/set-process-priority/</guid>
+          <description xml:base="https://yneth.github.io/snippets/set-process-priority/">&lt;p&gt;To check niceness: &lt;code&gt;ps -eo pid,ppid,ni,comm&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;or &lt;code&gt;NI&lt;&#x2F;code&gt; column in &lt;code&gt;htop&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;To set cpu priority: &lt;code&gt;nice -n -10 …&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To set io priority: &lt;code&gt;ionice ...&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;It is composable with &lt;code&gt;nice&lt;&#x2F;code&gt; as child processes inherit parent attributes.&lt;&#x2F;p&gt;
+&lt;p&gt;Sources:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Nice_(Unix)&quot;&gt;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Nice_(Unix)&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;nice&quot;&gt;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;nice&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;ionice&quot;&gt;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;ionice&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.tecmint.com&#x2F;set-linux-process-priority-using-nice-and-renice-commands&#x2F;&quot;&gt;https:&#x2F;&#x2F;www.tecmint.com&#x2F;set-linux-process-priority-using-nice-and-renice-commands&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Child_process&quot;&gt;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Child_process&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;stackoverflow.com&#x2F;questions&#x2F;45970377&#x2F;combining-ionice-and-nice-in-linux-and-transitive-priorities&quot;&gt;https:&#x2F;&#x2F;stackoverflow.com&#x2F;questions&#x2F;45970377&#x2F;combining-ionice-and-nice-in-linux-and-transitive-priorities&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+    </channel>
+</rss>

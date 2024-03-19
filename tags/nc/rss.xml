@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Yneth Blog - nc</title>
+      <link>https://yneth.github.io</link>
+      <description>Yneth blog</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://yneth.github.io/tags/nc/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Mon, 18 Apr 2022 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>bash http server with fixed response</title>
+          <pubDate>Mon, 18 Apr 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/bash-http-server/</link>
+          <guid>https://yneth.github.io/snippets/bash-http-server/</guid>
+          <description xml:base="https://yneth.github.io/snippets/bash-http-server/">&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;while &lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;true&lt;&#x2F;span&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;; do &lt;&#x2F;span&gt;&lt;span&gt;{ 
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b39f04;&quot;&gt;echo &lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;-e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;HTTP&#x2F;1.1 400 Bad Request\nContent-Type: application&#x2F;json\n\n{&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;foo&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;bar&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;}&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;} &lt;&#x2F;span&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;| &lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;nc -l&lt;&#x2F;span&gt;&lt;span&gt; 8082&lt;&#x2F;span&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;; done
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</description>
+      </item>
+    </channel>
+</rss>

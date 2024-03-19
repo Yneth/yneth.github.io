@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<head>
+    <meta charset="UTF-8">
+    <title>bash http server with fixed response</title>
+    <meta name="description" content="">
+
+    <meta name=”robots” content="index, follow">
+    <link rel="canonical" href="https:&#x2F;&#x2F;yneth.github.io&#x2F;snippets&#x2F;bash-http-server&#x2F;">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="author" content="Anthony (Yneth)">
+
+    <meta property="og:title" content="bash http server with fixed response">
+    <meta property="og:description"
+          content="">
+    
+    
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="bash http server with fixed response">
+    <meta name="twitter:description"
+          content="">
+    
+
+    <link rel="stylesheet" href="https://yneth.github.io/styles.css?h=a58ef5aef352a232cf15"/>
+
+    <link rel="shortcut icon" type="image/png" href="https://yneth.github.io/favicon.png"/>
+    <link href="https://yneth.github.io/rss.xml" rel="feed" type="application/rss+xml" title="Yneth Blog"/>
+
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            'gtm.start':
+                new Date().getTime(), event: 'gtm.js'
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-5G27JJJ');</script>
+    <!-- End Google Tag Manager -->
+</head>
+
+
+<body class="flex flex-col min-h-screen p-4">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5G27JJJ"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<header class="flex flex-col justify-between px-4 md:h-16 md:flex-row">
+
+    <h1 class="py-4 text-xl text-center">
+        <a class="text-black" href="/">Yneth</a>
+    </h1>
+
+    <ul class="mt-2 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4 items-center justify-around">
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/snippets/">Snippets</a></li>
+        <li><a href="/tags/">Tags</a></li>
+    </ul>
+
+</header>
+
+<main class="grow flex flex-col items-center h-full">
+    
+    <article class="md:w-[48em] border-1 border-y border-black mt-8 py-2 w-full grow whitespace-normal">
+        <h1>bash http server with fixed response</h1>
+        <div>
+            2022-04-18
+            
+        </div>
+
+        <hr/>
+
+        
+            <ul class="flex flex-row flex-wrap gap-x-2">
+                
+                    <li><a href="https://yneth.github.io/tags/snippet/">#snippet</a></li>
+                
+                    <li><a href="https://yneth.github.io/tags/bash/">#bash</a></li>
+                
+                    <li><a href="https://yneth.github.io/tags/nc/">#nc</a></li>
+                
+            </ul>
+        
+
+        <div class="article__content mt-4">
+            <pre data-lang="bash" style="background-color:#f5f5f5;color:#1f1f1f;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#72ab00;">while </span><span style="color:#5597d6;">true</span><span style="color:#72ab00;">; do </span><span>{ 
+</span><span>  </span><span style="color:#b39f04;">echo </span><span style="color:#5597d6;">-e </span><span style="color:#d07711;">&quot;HTTP/1.1 400 Bad Request\nContent-Type: application/json\n\n{</span><span style="color:#aeb52b;">\&quot;</span><span style="color:#d07711;">foo</span><span style="color:#aeb52b;">\&quot;</span><span style="color:#d07711;">: </span><span style="color:#aeb52b;">\&quot;</span><span style="color:#d07711;">bar</span><span style="color:#aeb52b;">\&quot;</span><span style="color:#d07711;">}&quot;
+</span><span>} </span><span style="color:#72ab00;">| </span><span style="color:#5597d6;">nc -l</span><span> 8082</span><span style="color:#72ab00;">; done
+</span></code></pre>
+
+        </div>
+    </article>
+
+    <section class="w-full mt-8 py-2">
+        <script src="https://utteranc.es/client.js"
+                repo="yneth/yneth.github.io"
+                issue-term="pathname"
+                theme="github-light"
+                crossorigin="anonymous"
+                async>
+        </script>
+    </section>
+
+</main>
+
+</body>
+</html>

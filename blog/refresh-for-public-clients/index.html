@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<head>
+    <meta charset="UTF-8">
+    <title>how to refresh tokens in SPA and mobile apps securely</title>
+    <meta name="description" content="">
+
+    <meta name=”robots” content="index, follow">
+    <link rel="canonical" href="https:&#x2F;&#x2F;yneth.github.io&#x2F;blog&#x2F;refresh-for-public-clients&#x2F;">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="author" content="Anthony (Yneth)">
+
+    <meta property="og:title" content="how to refresh tokens in SPA and mobile apps securely">
+    <meta property="og:description"
+          content="">
+    
+    
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="how to refresh tokens in SPA and mobile apps securely">
+    <meta name="twitter:description"
+          content="">
+    
+
+    <link rel="stylesheet" href="https://yneth.github.io/styles.css?h=a58ef5aef352a232cf15"/>
+
+    <link rel="shortcut icon" type="image/png" href="https://yneth.github.io/favicon.png"/>
+    <link href="https://yneth.github.io/rss.xml" rel="feed" type="application/rss+xml" title="Yneth Blog"/>
+
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            'gtm.start':
+                new Date().getTime(), event: 'gtm.js'
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-5G27JJJ');</script>
+    <!-- End Google Tag Manager -->
+</head>
+
+
+<body class="flex flex-col min-h-screen p-4">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5G27JJJ"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<header class="flex flex-col justify-between px-4 md:h-16 md:flex-row">
+
+    <h1 class="py-4 text-xl text-center">
+        <a class="text-black" href="/">Yneth</a>
+    </h1>
+
+    <ul class="mt-2 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4 items-center justify-around">
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/snippets/">Snippets</a></li>
+        <li><a href="/tags/">Tags</a></li>
+    </ul>
+
+</header>
+
+<main class="grow flex flex-col items-center h-full">
+    
+    <article class="md:w-[48em] border-1 border-y border-black mt-8 py-2 w-full grow whitespace-normal">
+        <h1>how to refresh tokens in SPA and mobile apps securely</h1>
+        <div>
+            2023-02-01
+            
+        </div>
+
+        <hr/>
+
+        
+            <ul class="flex flex-row flex-wrap gap-x-2">
+                
+                    <li><a href="https://yneth.github.io/tags/oauth/">#oauth</a></li>
+                
+                    <li><a href="https://yneth.github.io/tags/security/">#security</a></li>
+                
+                    <li><a href="https://yneth.github.io/tags/authentication/">#authentication</a></li>
+                
+            </ul>
+        
+
+        <div class="article__content mt-4">
+            <h1 id="introduction">Introduction<a class="zola-anchor" href="#introduction" aria-label="Anchor link for: introduction">🔗</a></h1>
+<div class="alert">DRAFT, may contain incomplete info...</div>
+<p>In this article I'd like to share the results of my research on how to prolong user session lifetime for OAuth public
+clients securely. You can skip this part if you are already familiar with OAuth protocol.</p>
+<h2 id="oauth-definition">OAuth definition<a class="zola-anchor" href="#oauth-definition" aria-label="Anchor link for: oauth-definition">🔗</a></h2>
+<p>OAuth 2.0 is an open authentication specification that provides us a secure mechanism to access secured third party
+resources without sharing passwords. This mechanism involves the following parties:</p>
+<ul>
+<li>resource owner (user);</li>
+<li>client (application);</li>
+<li>resource server (secured api that stores user data);</li>
+<li>authorization server.</li>
+</ul>
+<p>Where the <strong>user</strong> is using <strong>application</strong> (<strong>client</strong>) which wants to access <strong>resource server</strong> with <strong>authorization
+server</strong>
+issued tokens.</p>
+<p>A good example would be a Google calendar extension. The developer of an extension needs to access users' calendars via
+Google calendar API in order to do this he needs to use Google OAuth to receive user tokens.</p>
+<h2 id="oauth-implementation">OAuth implementation<a class="zola-anchor" href="#oauth-implementation" aria-label="Anchor link for: oauth-implementation">🔗</a></h2>
+<p>To support authentication in the simplest form, OAuth server should implement the following endpoints:</p>
+<ul>
+<li>authorize endpoint - the one that initiates the login flow and renders login form;</li>
+<li>token endpoint - the one that exchanges grant to tokens;</li>
+</ul>
+<br>
+<p>The most basic flow is called <code>authorization_code</code>. First, user initiates the login by visiting authorize endpoint which
+renders the login page. As soon as credentials are entered and validated the user is redirected back to application that
+initiated the login with success or error request parameters. In case of success he would retrieve <code>authorization_code</code>
+that is then exchanged to <code>access_token / refresh_token</code> pair by the user of token endpoint.</p>
+<h3 id="authorization_code_flow_webserver">Diagram describing the <code>authorization_code</code> flow:<a class="zola-anchor" href="#authorization_code_flow_webserver" aria-label="Anchor link for: authorization_code_flow_webserver">🔗</a></h3>
+<p><img src="../2023-02-01_authorization_code_flow.png" alt="authorization_code flow" /></p>
+<p>Here we can see some parameters in both endpoints, lets' dive into them and check each endpoint API closely.</p>
+<div class="note">
+NOTE: client in current context is an application that needs to access resource owner data.
+</div>
+<br>
+<h3 id="authorize-endpoint-parameters">Authorize endpoint parameters<a class="zola-anchor" href="#authorize-endpoint-parameters" aria-label="Anchor link for: authorize-endpoint-parameters">🔗</a></h3>
+<ol>
+<li><code>client_id</code> - id of the registered client in the Authorization Server</li>
+<li><code>redirect_uri</code> - redirect uri that was defined during client creation</li>
+<li><code>scope</code> - authorization part of the authentication flow, what APIs users of the client will be allowed to use on
+the <code>resource server</code></li>
+<li><code>state</code> - random string to prevent CSRF attacks</li>
+<li><code>response_type</code> - the type of the response user wants to receive, in our case it is &quot;code&quot; which refers
+to <code>authorization_code</code></li>
+</ol>
+<br>
+<h3 id="token-endpoint-parameters">Token Endpoint parameters<a class="zola-anchor" href="#token-endpoint-parameters" aria-label="Anchor link for: token-endpoint-parameters">🔗</a></h3>
+<ol>
+<li><code>client_id</code></li>
+<li><code>client_secret</code></li>
+<li><code>grant_type</code> - type of grant, that was issued by authorization server as a handle to receive tokens for requested
+user;</li>
+<li><code>code</code> - <code>authorization_code</code> as a temporary random value that works as a handle to receive tokens;</li>
+</ol>
+<h2 id="client-and-client-authentication-method-types">Client and client authentication method types<a class="zola-anchor" href="#client-and-client-authentication-method-types" aria-label="Anchor link for: client-and-client-authentication-method-types">🔗</a></h2>
+<p>The example we have seen describes the flow of <code>confidential client</code> authorization using authentication method
+called <code>client_secret_post</code>, meaning that user should send <code>client_secret</code> to token endpoint using POST HTTP method.</p>
+<p>OAuth specification describes different types of clients such as <code>confidential</code> and <code>public</code>. In layman terms,
+confidential is a type of client that can &quot;securely&quot; store secrets without leaking them to malicious users and most
+often it is a backend, whereas public clients are browser or mobile based apps, where secrets can be found via source
+code review.</p>
+<p>OAuth specification also states the different client authentication methods, widely used ones are:</p>
+<ul>
+<li><code>client_secret_post</code> - it is when the application MUST send <code>client_secret</code> on token endpoint requests</li>
+<li><code>none</code> - in this case client is allowed to retrieve tokens from token endpoint without use of any secrets;</li>
+</ul>
+<br>
+<p>You may start thinking why would I need <code>client_secret</code> and the answer is simple, it is the token that proves the
+identity of the client and allows your application receive tokens, such that no one else could, unless your secret is
+compromised. Why is identity proof needed for client?<br />
+<code>authorization_code</code> is weak from security standpoint, it may be hijacked in the process either during redirect or from
+logs etc. or lets' imagine if there was no <code>client_secret</code> at all, then it would open the endpoint to CSRF and
+enumeration attacks.</p>
+<h2 id="public-clients-and-pkce-extension">Public clients and PKCE extension<a class="zola-anchor" href="#public-clients-and-pkce-extension" aria-label="Anchor link for: public-clients-and-pkce-extension">🔗</a></h2>
+<p>Now lets' focus on the second client authentication method: <code>none</code>. It is useful for public clients that are unable to
+store and use secrets. As previously said this authentication method does not require application to
+send <code>client_secret</code>, to prove the identity of the app there was introduced OAuth 2.1 specification with Proof Key for
+Code Exchange extension to the existing flow.</p>
+<p>In short, it is adding a couple of new parameters to authrorize and token endpoints:</p>
+<ul>
+<li><code>code_challenge</code> -- represents some hashed string, used in authorize endpoint;</li>
+<li><code>code_challenge_method</code> -- the hashing method, used in authorize endpoint;</li>
+<li><code>code_verifier</code> -- original string, used in token endpoint;</li>
+</ul>
+<br>
+<h3 id="the-diagram-describing-pkce-public-client-flow">The diagram describing PKCE public client flow:<a class="zola-anchor" href="#the-diagram-describing-pkce-public-client-flow" aria-label="Anchor link for: the-diagram-describing-pkce-public-client-flow">🔗</a></h3>
+<p><img src="../2023-02-01_authorization_code_with_pkce_flow.png" alt="authorization_code flow with PKCE" /></p>
+<p>To use PKCE extension application MUST provide hashed <code>code_challenge</code> during authorize endpoint call that OAuth Server
+MUST store, then at the moment of token verification OAuth Server will validate that <code>code_challenge</code> matches and will
+validate that <code>code_challenge_method(code_verifier)</code> is equal to <code>code_challenge</code>.</p>
+<p>This extension mitigates CSRF attacks. Lets' imagine that attacker crafted a webpage to handle code returned from
+authorization server. Now in order to successfully exchange the code to tokens he would need to send <code>code_verifier</code>
+too, which is very hard to guess from <code>code_challenge</code>.</p>
+<h3 id="diagram-describing-csrf-attack-flow">Diagram describing CSRF attack flow<a class="zola-anchor" href="#diagram-describing-csrf-attack-flow" aria-label="Anchor link for: diagram-describing-csrf-attack-flow">🔗</a></h3>
+<p>TODO CSRF ATTACK DIAGRAM</p>
+<p>Also, some mobile operating systems allow registering multiple handlers for the same deeplink allowing malicious handlers
+catch the <code>authorization_code</code> and thanks to <code>PKCE</code> this attack vector becomes useless.</p>
+<p>Now, as we established the definition of <code>public_client</code> with the <code>none</code> client authentication method along with <code>PKCE</code>
+extension, we can think whats next.</p>
+<p>Token Endpoint is capable of returning not only <code>access_token</code> but <code>refresh_token</code> too and the latter one is nuanced
+for <code>public_clients</code>. As previously said <code>public_clients</code> are not safe to store secrets and <code>refresh_token</code> in this case
+is also the one that should not be leaked to the malicious users.</p>
+<h1 id="solutions">Solutions<a class="zola-anchor" href="#solutions" aria-label="Anchor link for: solutions">🔗</a></h1>
+<p>To deal with this obstacle there are numerous strategies, in order of security guarantees:</p>
+<ul>
+<li>
+<p>no refresh token;</p>
+<p>Security Requirements:</p>
+<ul>
+<li>OAuth server MUST support CORS in headers</li>
+<li>OAuth server MUST require absolute <code>redirect_uri</code></li>
+<li><code>authorization_code</code> grant type MUST be protected using PKCE</li>
+<li>Clients MUST enforce PKCE flow</li>
+<li>Clients MUST protect from CSRF using <code>state</code> parameter and PKCE</li>
+</ul>
+<p>Client should use iframe in which it will send oauth authorization requests along with a cookie that was issued on
+initial successful authentication via Authorization Server, this way use will 
+It is similar to how firebase work which is discussed in this article.</p>
+</li>
+<li>
+<p>use <code>refresh_tokens</code></p>
+<p>Security Requirements:</p>
+<ul>
+<li>MUST either &quot;rotate&quot; refresh token OR use &quot;sender-constrained&quot; tokens</li>
+<li>MUST either set a maximum lifetime OR expire if the refresh token has not been used within a specific amount
+of time</li>
+<li>MUST NOT extend the lifetime of the new refresh token beyond the lifetime of the initial refresh token</li>
+</ul>
+</li>
+<li>
+<p>use sender constrained refresh tokens:</p>
+<p>The main idea is to bind OAuth issued tokens to clients, restricting malicious users reusing them.<br />
+There are different RFCs describing the possible implementations:</p>
+<ul>
+<li>
+<p>RFC-8705: Mutual TLS Client Authentication and Certificate bound access tokens</p>
+<p>It uses hash of the client certificate used during TLS handshake.<br />
+This way access and refresh tokens are bound to the client certificate and if it differs from one that was
+initially negotiated then further access to resources or token refreshed will be restricted.</p>
+</li>
+<li>
+<p>OAuth 2.0 Demonstrating Proof-of-Posession at the Application Layer <strong>(Draft)</strong></p>
+</li>
+<li>
+<p>OAuth 2.0 Token binding <strong>(Draft)</strong></p>
+</li>
+<li>
+<p>use short-lived refresh tokens that are updated on each token refresh request;</p>
+<p>but it allows malicious users to catch the token and successfully use it up to the lifetime of the
+accessToken.</p>
+<p>lets' say accessToken has 15 minutes lifetime and the refreshToken is 1 hour.</p>
+<p>if malicious client catches tokens at any point of time, he is able to use them for 15 minutes and as soon as
+malicious user initiates refreshToken OAuth server will know there was a breach issuing the complete
+authentication flow for the legitimate client.</p>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="alternatives">Alternatives<a class="zola-anchor" href="#alternatives" aria-label="Anchor link for: alternatives">🔗</a></h1>
+<p>More traditional solution that requires a bit more effort would be to use backend for frontend that performs OAuth
+flows and stores the tokens and secrets in &quot;secure&quot; storage, as it is done in the beginning of the article, <a href="https://yneth.github.io/blog/refresh-for-public-clients/#authorization_code_flow_webserver">see</a>.</p>
+<div class="note">
+NOTE: Client is used as "backend for frontend".
+</div>
+<p>Security Requirements:</p>
+<ul>
+<li>Client MUST be registered as a &quot;confidential client&quot;</li>
+<li>Clients store the access token and refresh token in the &quot;secure&quot; server environment</li>
+<li>Clients SHOULD implement PKCE and Authorization Servers MUST enforece PKCE, if used or cofigured</li>
+<li>Clients MUST protect aginst CSRF using state or nonce parameter</li>
+<li>The server establishes a session between the frontend and backend using a session cookie with the &quot;HttpOnly&quot;
+and &quot;secure&quot; attributes set</li>
+</ul>
+<h1 id="tldr">TLDR<a class="zola-anchor" href="#tldr" aria-label="Anchor link for: tldr">🔗</a></h1>
+<ul>
+<li>the more security guarantees the better</li>
+<li>always use PKCE even in the backend for frontend solution</li>
+<li>always use <code>nonce</code> or <code>state</code> to prevent CSRF</li>
+<li>exact matching of redirect URIs</li>
+<li>enforce https in the redirect URIs</li>
+<li>do not use <code>implicit_grant</code> authorisation flow</li>
+<li>when issuing refresh tokens to public clients:
+<ul>
+<li>MUST rotate or bind refresh tokens to the clients</li>
+<li>MUST limit the lifetime of the refresh token  </li>
+</ul>
+</li>
+</ul>
+
+        </div>
+    </article>
+
+    <section class="w-full mt-8 py-2">
+        <script src="https://utteranc.es/client.js"
+                repo="yneth/yneth.github.io"
+                issue-term="pathname"
+                theme="github-light"
+                crossorigin="anonymous"
+                async>
+        </script>
+    </section>
+
+</main>
+
+</body>
+</html>

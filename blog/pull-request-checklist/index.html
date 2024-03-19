@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<head>
+    <meta charset="UTF-8">
+    <title>Pull request checklist</title>
+    <meta name="description" content="">
+
+    <meta name=”robots” content="index, follow">
+    <link rel="canonical" href="https:&#x2F;&#x2F;yneth.github.io&#x2F;blog&#x2F;pull-request-checklist&#x2F;">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="author" content="Anthony (Yneth)">
+
+    <meta property="og:title" content="Pull request checklist">
+    <meta property="og:description"
+          content="">
+    
+    
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Pull request checklist">
+    <meta name="twitter:description"
+          content="">
+    
+
+    <link rel="stylesheet" href="https://yneth.github.io/styles.css?h=a58ef5aef352a232cf15"/>
+
+    <link rel="shortcut icon" type="image/png" href="https://yneth.github.io/favicon.png"/>
+    <link href="https://yneth.github.io/rss.xml" rel="feed" type="application/rss+xml" title="Yneth Blog"/>
+
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            'gtm.start':
+                new Date().getTime(), event: 'gtm.js'
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-5G27JJJ');</script>
+    <!-- End Google Tag Manager -->
+</head>
+
+
+<body class="flex flex-col min-h-screen p-4">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5G27JJJ"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<header class="flex flex-col justify-between px-4 md:h-16 md:flex-row">
+
+    <h1 class="py-4 text-xl text-center">
+        <a class="text-black" href="/">Yneth</a>
+    </h1>
+
+    <ul class="mt-2 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4 items-center justify-around">
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/snippets/">Snippets</a></li>
+        <li><a href="/tags/">Tags</a></li>
+    </ul>
+
+</header>
+
+<main class="grow flex flex-col items-center h-full">
+    
+    <article class="md:w-[48em] border-1 border-y border-black mt-8 py-2 w-full grow whitespace-normal">
+        <h1>Pull request checklist</h1>
+        <div>
+            2023-01-15
+            
+        </div>
+
+        <hr/>
+
+        
+            <ul class="flex flex-row flex-wrap gap-x-2">
+                
+                    <li><a href="https://yneth.github.io/tags/code-review/">#code_review</a></li>
+                
+            </ul>
+        
+
+        <div class="article__content mt-4">
+            <p>For me, it is hard to keep all the rules in the head, so I decided
+to compile a list of my checks before publishing a pull-request.</p>
+<ul>
+<li>package version
+<ul>
+<li>breaking change - use MAJOR bump X.x.x</li>
+<li>new feature - MINOR x.X.x</li>
+<li>else -  PATCH x.x.X</li>
+</ul>
+</li>
+<li>API
+<ul>
+<li>correct status codes?</li>
+<li>extendable object?
+<br>
+using objects instead of plain lists or values allows you to extend requests or responses easier.<br />
+<br>
+<em>BAD</em>:<pre style="background-color:#f5f5f5;color:#1f1f1f;"><code><span>[&quot;name1&quot;, &quot;name&quot;]  
+</span></code></pre>
+<em>GOOD</em>:<pre style="background-color:#f5f5f5;color:#1f1f1f;"><code><span>{  
+</span><span>  &quot;data&quot;: [{&quot;name&quot;: &quot;name1&quot;}]  
+</span><span>}  
+</span></code></pre>
+<hr />
+</li>
+<li>versioned API?</li>
+<li>swagger / validation annotations</li>
+<li>openness - who should access the endpoint?
+<ul>
+<li>public</li>
+<li>private</li>
+</ul>
+</li>
+<li>how to update endpoint?
+<ul>
+<li>new field</li>
+<li>new API version</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Configuration
+<ul>
+<li>feature needs configurability?</li>
+<li>do not forget to update configurations in the integration tests</li>
+</ul>
+</li>
+<li>Datasource
+<ul>
+<li>transactionally correct?
+<ul>
+<li>what if some system goes down?</li>
+<li>what if some system rolls back?</li>
+<li>what if multiple users are editing at the same time?</li>
+</ul>
+</li>
+<li>validations are included?</li>
+<li>all queries are optimal?</li>
+<li>needs de-normalisation?</li>
+<li>CAP
+<ul>
+<li>available</li>
+<li>consistent</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Messaging
+<ul>
+<li>Kafka
+<ul>
+<li>consumer
+<ul>
+<li>at least once delivery is ok or has correct handling</li>
+<li>should be consistent? increase number of acks</li>
+<li>should read from the beginning? use default earliest offsets</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Caching
+<ul>
+<li>requires caching?
+<ul>
+<li>ttl?</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Error handling
+<ul>
+<li>is there something you should handle beforehand?
+<ul>
+<li>specific DB exceptions</li>
+<li>specific API exceptions</li>
+</ul>
+</li>
+<li>do you need to handle exceptions generically?</li>
+<li>do you need to handle exceptions separately?</li>
+</ul>
+</li>
+<li>Security
+<ul>
+<li>make sure not to include sensitive data in logs</li>
+<li>sensitive data excluded from <code>toString</code></li>
+</ul>
+</li>
+<li>Monitoring
+<ul>
+<li>metrics
+<ul>
+<li>API</li>
+<li>Datasource</li>
+<li>Cache</li>
+<li>HTTP Clients</li>
+</ul>
+</li>
+<li>logs
+<ul>
+<li>method start traced correctly</li>
+<li>method completion traced correctly</li>
+<li>errors are logged once with <code>incidentId</code>, log or re-throw strategy</li>
+<li>warnings for unusual behaviours</li>
+</ul>
+</li>
+<li>should include admin endpoint to view the state if any?</li>
+</ul>
+</li>
+<li>Tests
+<ul>
+<li>all cases covered?</li>
+<li>contracts
+<ul>
+<li>should other services update contracts as well?</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Networking
+<ul>
+<li>retries
+<ul>
+<li>idempotency handled?</li>
+<li>is using correct retry mechanism in case of service discovery?</li>
+</ul>
+</li>
+<li>timeouts</li>
+<li>circuit breaker timeout
+<ul>
+<li>does it have meaningful fallback to return in case of errors?</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Docs
+<ul>
+<li>how to</li>
+<li>configuration options</li>
+<li>migration</li>
+<li>REST</li>
+<li>diagrams</li>
+</ul>
+</li>
+<li>Third Party users
+<ul>
+<li>does it break someone?</li>
+</ul>
+</li>
+<li>Process
+<ul>
+<li>should you split task and move parts to other sprints?  </li>
+</ul>
+</li>
+</ul>
+
+        </div>
+    </article>
+
+    <section class="w-full mt-8 py-2">
+        <script src="https://utteranc.es/client.js"
+                repo="yneth/yneth.github.io"
+                issue-term="pathname"
+                theme="github-light"
+                crossorigin="anonymous"
+                async>
+        </script>
+    </section>
+
+</main>
+
+</body>
+</html>

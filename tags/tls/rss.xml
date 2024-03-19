@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Yneth Blog - tls</title>
+      <link>https://yneth.github.io</link>
+      <description>Yneth blog</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://yneth.github.io/tags/tls/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Thu, 05 May 2022 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>links to test tls connection</title>
+          <pubDate>Thu, 05 May 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/links-to-check-tls/</link>
+          <guid>https://yneth.github.io/snippets/links-to-check-tls/</guid>
+          <description xml:base="https://yneth.github.io/snippets/links-to-check-tls/">&lt;p&gt;Links: &lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;expired.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;expired.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;wrong.host.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;wrong.host.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;self-signed.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;self-signed.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;untrusted-root.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;untrusted-root.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;revoked.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;revoked.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;pinning-test.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;pinning-test.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Sources:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;sfackler&#x2F;rust-native-tls&#x2F;pull&#x2F;56&quot;&gt;https:&#x2F;&#x2F;github.com&#x2F;sfackler&#x2F;rust-native-tls&#x2F;pull&#x2F;56&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+    </channel>
+</rss>

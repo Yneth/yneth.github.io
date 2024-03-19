@@ -1,0 +1,833 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Yneth Blog</title>
+      <link>https://yneth.github.io</link>
+      <description>Yneth blog</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://yneth.github.io/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Wed, 01 Feb 2023 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>how to refresh tokens in SPA and mobile apps securely</title>
+          <pubDate>Wed, 01 Feb 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/blog/refresh-for-public-clients/</link>
+          <guid>https://yneth.github.io/blog/refresh-for-public-clients/</guid>
+          <description xml:base="https://yneth.github.io/blog/refresh-for-public-clients/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;a class=&quot;zola-anchor&quot; href=&quot;#introduction&quot; aria-label=&quot;Anchor link for: introduction&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;div class=&quot;alert&quot;&gt;DRAFT, may contain incomplete info...&lt;&#x2F;div&gt;
+&lt;p&gt;In this article I&#x27;d like to share the results of my research on how to prolong user session lifetime for OAuth public
+clients securely. You can skip this part if you are already familiar with OAuth protocol.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;oauth-definition&quot;&gt;OAuth definition&lt;a class=&quot;zola-anchor&quot; href=&quot;#oauth-definition&quot; aria-label=&quot;Anchor link for: oauth-definition&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;OAuth 2.0 is an open authentication specification that provides us a secure mechanism to access secured third party
+resources without sharing passwords. This mechanism involves the following parties:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;resource owner (user);&lt;&#x2F;li&gt;
+&lt;li&gt;client (application);&lt;&#x2F;li&gt;
+&lt;li&gt;resource server (secured api that stores user data);&lt;&#x2F;li&gt;
+&lt;li&gt;authorization server.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Where the &lt;strong&gt;user&lt;&#x2F;strong&gt; is using &lt;strong&gt;application&lt;&#x2F;strong&gt; (&lt;strong&gt;client&lt;&#x2F;strong&gt;) which wants to access &lt;strong&gt;resource server&lt;&#x2F;strong&gt; with &lt;strong&gt;authorization
+server&lt;&#x2F;strong&gt;
+issued tokens.&lt;&#x2F;p&gt;
+&lt;p&gt;A good example would be a Google calendar extension. The developer of an extension needs to access users&#x27; calendars via
+Google calendar API in order to do this he needs to use Google OAuth to receive user tokens.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;oauth-implementation&quot;&gt;OAuth implementation&lt;a class=&quot;zola-anchor&quot; href=&quot;#oauth-implementation&quot; aria-label=&quot;Anchor link for: oauth-implementation&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;To support authentication in the simplest form, OAuth server should implement the following endpoints:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;authorize endpoint - the one that initiates the login flow and renders login form;&lt;&#x2F;li&gt;
+&lt;li&gt;token endpoint - the one that exchanges grant to tokens;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;br&gt;
+&lt;p&gt;The most basic flow is called &lt;code&gt;authorization_code&lt;&#x2F;code&gt;. First, user initiates the login by visiting authorize endpoint which
+renders the login page. As soon as credentials are entered and validated the user is redirected back to application that
+initiated the login with success or error request parameters. In case of success he would retrieve &lt;code&gt;authorization_code&lt;&#x2F;code&gt;
+that is then exchanged to &lt;code&gt;access_token &#x2F; refresh_token&lt;&#x2F;code&gt; pair by the user of token endpoint.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;authorization_code_flow_webserver&quot;&gt;Diagram describing the &lt;code&gt;authorization_code&lt;&#x2F;code&gt; flow:&lt;a class=&quot;zola-anchor&quot; href=&quot;#authorization_code_flow_webserver&quot; aria-label=&quot;Anchor link for: authorization_code_flow_webserver&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;img src=&quot;..&#x2F;2023-02-01_authorization_code_flow.png&quot; alt=&quot;authorization_code flow&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Here we can see some parameters in both endpoints, lets&#x27; dive into them and check each endpoint API closely.&lt;&#x2F;p&gt;
+&lt;div class=&quot;note&quot;&gt;
+NOTE: client in current context is an application that needs to access resource owner data.
+&lt;&#x2F;div&gt;
+&lt;br&gt;
+&lt;h3 id=&quot;authorize-endpoint-parameters&quot;&gt;Authorize endpoint parameters&lt;a class=&quot;zola-anchor&quot; href=&quot;#authorize-endpoint-parameters&quot; aria-label=&quot;Anchor link for: authorize-endpoint-parameters&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;client_id&lt;&#x2F;code&gt; - id of the registered client in the Authorization Server&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;redirect_uri&lt;&#x2F;code&gt; - redirect uri that was defined during client creation&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;scope&lt;&#x2F;code&gt; - authorization part of the authentication flow, what APIs users of the client will be allowed to use on
+the &lt;code&gt;resource server&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;state&lt;&#x2F;code&gt; - random string to prevent CSRF attacks&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;response_type&lt;&#x2F;code&gt; - the type of the response user wants to receive, in our case it is &amp;quot;code&amp;quot; which refers
+to &lt;code&gt;authorization_code&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;br&gt;
+&lt;h3 id=&quot;token-endpoint-parameters&quot;&gt;Token Endpoint parameters&lt;a class=&quot;zola-anchor&quot; href=&quot;#token-endpoint-parameters&quot; aria-label=&quot;Anchor link for: token-endpoint-parameters&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;client_id&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;client_secret&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;grant_type&lt;&#x2F;code&gt; - type of grant, that was issued by authorization server as a handle to receive tokens for requested
+user;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;code&lt;&#x2F;code&gt; - &lt;code&gt;authorization_code&lt;&#x2F;code&gt; as a temporary random value that works as a handle to receive tokens;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h2 id=&quot;client-and-client-authentication-method-types&quot;&gt;Client and client authentication method types&lt;a class=&quot;zola-anchor&quot; href=&quot;#client-and-client-authentication-method-types&quot; aria-label=&quot;Anchor link for: client-and-client-authentication-method-types&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;The example we have seen describes the flow of &lt;code&gt;confidential client&lt;&#x2F;code&gt; authorization using authentication method
+called &lt;code&gt;client_secret_post&lt;&#x2F;code&gt;, meaning that user should send &lt;code&gt;client_secret&lt;&#x2F;code&gt; to token endpoint using POST HTTP method.&lt;&#x2F;p&gt;
+&lt;p&gt;OAuth specification describes different types of clients such as &lt;code&gt;confidential&lt;&#x2F;code&gt; and &lt;code&gt;public&lt;&#x2F;code&gt;. In layman terms,
+confidential is a type of client that can &amp;quot;securely&amp;quot; store secrets without leaking them to malicious users and most
+often it is a backend, whereas public clients are browser or mobile based apps, where secrets can be found via source
+code review.&lt;&#x2F;p&gt;
+&lt;p&gt;OAuth specification also states the different client authentication methods, widely used ones are:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;client_secret_post&lt;&#x2F;code&gt; - it is when the application MUST send &lt;code&gt;client_secret&lt;&#x2F;code&gt; on token endpoint requests&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;none&lt;&#x2F;code&gt; - in this case client is allowed to retrieve tokens from token endpoint without use of any secrets;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;br&gt;
+&lt;p&gt;You may start thinking why would I need &lt;code&gt;client_secret&lt;&#x2F;code&gt; and the answer is simple, it is the token that proves the
+identity of the client and allows your application receive tokens, such that no one else could, unless your secret is
+compromised. Why is identity proof needed for client?&lt;br &#x2F;&gt;
+&lt;code&gt;authorization_code&lt;&#x2F;code&gt; is weak from security standpoint, it may be hijacked in the process either during redirect or from
+logs etc. or lets&#x27; imagine if there was no &lt;code&gt;client_secret&lt;&#x2F;code&gt; at all, then it would open the endpoint to CSRF and
+enumeration attacks.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;public-clients-and-pkce-extension&quot;&gt;Public clients and PKCE extension&lt;a class=&quot;zola-anchor&quot; href=&quot;#public-clients-and-pkce-extension&quot; aria-label=&quot;Anchor link for: public-clients-and-pkce-extension&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;Now lets&#x27; focus on the second client authentication method: &lt;code&gt;none&lt;&#x2F;code&gt;. It is useful for public clients that are unable to
+store and use secrets. As previously said this authentication method does not require application to
+send &lt;code&gt;client_secret&lt;&#x2F;code&gt;, to prove the identity of the app there was introduced OAuth 2.1 specification with Proof Key for
+Code Exchange extension to the existing flow.&lt;&#x2F;p&gt;
+&lt;p&gt;In short, it is adding a couple of new parameters to authrorize and token endpoints:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;code_challenge&lt;&#x2F;code&gt; -- represents some hashed string, used in authorize endpoint;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;code_challenge_method&lt;&#x2F;code&gt; -- the hashing method, used in authorize endpoint;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;code_verifier&lt;&#x2F;code&gt; -- original string, used in token endpoint;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;br&gt;
+&lt;h3 id=&quot;the-diagram-describing-pkce-public-client-flow&quot;&gt;The diagram describing PKCE public client flow:&lt;a class=&quot;zola-anchor&quot; href=&quot;#the-diagram-describing-pkce-public-client-flow&quot; aria-label=&quot;Anchor link for: the-diagram-describing-pkce-public-client-flow&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;img src=&quot;..&#x2F;2023-02-01_authorization_code_with_pkce_flow.png&quot; alt=&quot;authorization_code flow with PKCE&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To use PKCE extension application MUST provide hashed &lt;code&gt;code_challenge&lt;&#x2F;code&gt; during authorize endpoint call that OAuth Server
+MUST store, then at the moment of token verification OAuth Server will validate that &lt;code&gt;code_challenge&lt;&#x2F;code&gt; matches and will
+validate that &lt;code&gt;code_challenge_method(code_verifier)&lt;&#x2F;code&gt; is equal to &lt;code&gt;code_challenge&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;This extension mitigates CSRF attacks. Lets&#x27; imagine that attacker crafted a webpage to handle code returned from
+authorization server. Now in order to successfully exchange the code to tokens he would need to send &lt;code&gt;code_verifier&lt;&#x2F;code&gt;
+too, which is very hard to guess from &lt;code&gt;code_challenge&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;diagram-describing-csrf-attack-flow&quot;&gt;Diagram describing CSRF attack flow&lt;a class=&quot;zola-anchor&quot; href=&quot;#diagram-describing-csrf-attack-flow&quot; aria-label=&quot;Anchor link for: diagram-describing-csrf-attack-flow&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;TODO CSRF ATTACK DIAGRAM&lt;&#x2F;p&gt;
+&lt;p&gt;Also, some mobile operating systems allow registering multiple handlers for the same deeplink allowing malicious handlers
+catch the &lt;code&gt;authorization_code&lt;&#x2F;code&gt; and thanks to &lt;code&gt;PKCE&lt;&#x2F;code&gt; this attack vector becomes useless.&lt;&#x2F;p&gt;
+&lt;p&gt;Now, as we established the definition of &lt;code&gt;public_client&lt;&#x2F;code&gt; with the &lt;code&gt;none&lt;&#x2F;code&gt; client authentication method along with &lt;code&gt;PKCE&lt;&#x2F;code&gt;
+extension, we can think whats next.&lt;&#x2F;p&gt;
+&lt;p&gt;Token Endpoint is capable of returning not only &lt;code&gt;access_token&lt;&#x2F;code&gt; but &lt;code&gt;refresh_token&lt;&#x2F;code&gt; too and the latter one is nuanced
+for &lt;code&gt;public_clients&lt;&#x2F;code&gt;. As previously said &lt;code&gt;public_clients&lt;&#x2F;code&gt; are not safe to store secrets and &lt;code&gt;refresh_token&lt;&#x2F;code&gt; in this case
+is also the one that should not be leaked to the malicious users.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;solutions&quot;&gt;Solutions&lt;a class=&quot;zola-anchor&quot; href=&quot;#solutions&quot; aria-label=&quot;Anchor link for: solutions&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;To deal with this obstacle there are numerous strategies, in order of security guarantees:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;no refresh token;&lt;&#x2F;p&gt;
+&lt;p&gt;Security Requirements:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;OAuth server MUST support CORS in headers&lt;&#x2F;li&gt;
+&lt;li&gt;OAuth server MUST require absolute &lt;code&gt;redirect_uri&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;authorization_code&lt;&#x2F;code&gt; grant type MUST be protected using PKCE&lt;&#x2F;li&gt;
+&lt;li&gt;Clients MUST enforce PKCE flow&lt;&#x2F;li&gt;
+&lt;li&gt;Clients MUST protect from CSRF using &lt;code&gt;state&lt;&#x2F;code&gt; parameter and PKCE&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Client should use iframe in which it will send oauth authorization requests along with a cookie that was issued on
+initial successful authentication via Authorization Server, this way use will 
+It is similar to how firebase work which is discussed in this article.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;use &lt;code&gt;refresh_tokens&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Security Requirements:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;MUST either &amp;quot;rotate&amp;quot; refresh token OR use &amp;quot;sender-constrained&amp;quot; tokens&lt;&#x2F;li&gt;
+&lt;li&gt;MUST either set a maximum lifetime OR expire if the refresh token has not been used within a specific amount
+of time&lt;&#x2F;li&gt;
+&lt;li&gt;MUST NOT extend the lifetime of the new refresh token beyond the lifetime of the initial refresh token&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;use sender constrained refresh tokens:&lt;&#x2F;p&gt;
+&lt;p&gt;The main idea is to bind OAuth issued tokens to clients, restricting malicious users reusing them.&lt;br &#x2F;&gt;
+There are different RFCs describing the possible implementations:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;RFC-8705: Mutual TLS Client Authentication and Certificate bound access tokens&lt;&#x2F;p&gt;
+&lt;p&gt;It uses hash of the client certificate used during TLS handshake.&lt;br &#x2F;&gt;
+This way access and refresh tokens are bound to the client certificate and if it differs from one that was
+initially negotiated then further access to resources or token refreshed will be restricted.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;OAuth 2.0 Demonstrating Proof-of-Posession at the Application Layer &lt;strong&gt;(Draft)&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;OAuth 2.0 Token binding &lt;strong&gt;(Draft)&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;use short-lived refresh tokens that are updated on each token refresh request;&lt;&#x2F;p&gt;
+&lt;p&gt;but it allows malicious users to catch the token and successfully use it up to the lifetime of the
+accessToken.&lt;&#x2F;p&gt;
+&lt;p&gt;lets&#x27; say accessToken has 15 minutes lifetime and the refreshToken is 1 hour.&lt;&#x2F;p&gt;
+&lt;p&gt;if malicious client catches tokens at any point of time, he is able to use them for 15 minutes and as soon as
+malicious user initiates refreshToken OAuth server will know there was a breach issuing the complete
+authentication flow for the legitimate client.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;alternatives&quot;&gt;Alternatives&lt;a class=&quot;zola-anchor&quot; href=&quot;#alternatives&quot; aria-label=&quot;Anchor link for: alternatives&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;More traditional solution that requires a bit more effort would be to use backend for frontend that performs OAuth
+flows and stores the tokens and secrets in &amp;quot;secure&amp;quot; storage, as it is done in the beginning of the article, &lt;a href=&quot;https:&#x2F;&#x2F;yneth.github.io&#x2F;blog&#x2F;refresh-for-public-clients&#x2F;#authorization_code_flow_webserver&quot;&gt;see&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;div class=&quot;note&quot;&gt;
+NOTE: Client is used as &quot;backend for frontend&quot;.
+&lt;&#x2F;div&gt;
+&lt;p&gt;Security Requirements:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Client MUST be registered as a &amp;quot;confidential client&amp;quot;&lt;&#x2F;li&gt;
+&lt;li&gt;Clients store the access token and refresh token in the &amp;quot;secure&amp;quot; server environment&lt;&#x2F;li&gt;
+&lt;li&gt;Clients SHOULD implement PKCE and Authorization Servers MUST enforece PKCE, if used or cofigured&lt;&#x2F;li&gt;
+&lt;li&gt;Clients MUST protect aginst CSRF using state or nonce parameter&lt;&#x2F;li&gt;
+&lt;li&gt;The server establishes a session between the frontend and backend using a session cookie with the &amp;quot;HttpOnly&amp;quot;
+and &amp;quot;secure&amp;quot; attributes set&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;tldr&quot;&gt;TLDR&lt;a class=&quot;zola-anchor&quot; href=&quot;#tldr&quot; aria-label=&quot;Anchor link for: tldr&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;ul&gt;
+&lt;li&gt;the more security guarantees the better&lt;&#x2F;li&gt;
+&lt;li&gt;always use PKCE even in the backend for frontend solution&lt;&#x2F;li&gt;
+&lt;li&gt;always use &lt;code&gt;nonce&lt;&#x2F;code&gt; or &lt;code&gt;state&lt;&#x2F;code&gt; to prevent CSRF&lt;&#x2F;li&gt;
+&lt;li&gt;exact matching of redirect URIs&lt;&#x2F;li&gt;
+&lt;li&gt;enforce https in the redirect URIs&lt;&#x2F;li&gt;
+&lt;li&gt;do not use &lt;code&gt;implicit_grant&lt;&#x2F;code&gt; authorisation flow&lt;&#x2F;li&gt;
+&lt;li&gt;when issuing refresh tokens to public clients:
+&lt;ul&gt;
+&lt;li&gt;MUST rotate or bind refresh tokens to the clients&lt;&#x2F;li&gt;
+&lt;li&gt;MUST limit the lifetime of the refresh token  &lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+      <item>
+          <title>System Design template</title>
+          <pubDate>Mon, 30 Jan 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/blog/system-design-outline/</link>
+          <guid>https://yneth.github.io/blog/system-design-outline/</guid>
+          <description xml:base="https://yneth.github.io/blog/system-design-outline/">&lt;p&gt;When dealing with System Design it is important to have some outline.
+The one described in the article is commonly used in FAANG interviews. 
+Although it is useful to use the same approach when writing HLDs for 
+your new features on the daily job basis.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;functional-requirements&quot;&gt;Functional requirements&lt;a class=&quot;zola-anchor&quot; href=&quot;#functional-requirements&quot; aria-label=&quot;Anchor link for: functional-requirements&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;This part defines the feature to be implemented. When working on a project
+those will become your tasks. On the interview it is trickier, as 
+interviewer may want to see your capability to decompose the problem and 
+ask clarifying questions. &lt;&#x2F;p&gt;
+&lt;p&gt;Nice to ask questions:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;What are the features?
+&lt;ul&gt;
+&lt;li&gt;For easier definitions you could use &lt;code&gt;UserStory&lt;&#x2F;code&gt; approach.&lt;br &#x2F;&gt;
+Template:&lt;br &#x2F;&gt;
+As a &lt;code&gt;&amp;lt;role&amp;gt;&lt;&#x2F;code&gt;, I want &lt;code&gt;&amp;lt;goal&amp;gt;&lt;&#x2F;code&gt; so that &lt;code&gt;&amp;lt;reason&amp;gt;&lt;&#x2F;code&gt;.&lt;br &#x2F;&gt;
+Example:&lt;br &#x2F;&gt;
+As a User I want to have form where I can upload video stories to share it with my friends.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;What problem does it solve?
+&lt;ul&gt;
+&lt;li&gt;Are there any existing solutions?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Who is the target audience?&lt;&#x2F;li&gt;
+&lt;li&gt;How is it going to be monetised?&lt;&#x2F;li&gt;
+&lt;li&gt;Business KPIs to measure success&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;non-functional-requirements&quot;&gt;Non-Functional requirements&lt;a class=&quot;zola-anchor&quot; href=&quot;#non-functional-requirements&quot; aria-label=&quot;Anchor link for: non-functional-requirements&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Then, when you know what to be developed, you need to specify the &lt;code&gt;*-ilites&lt;&#x2F;code&gt; of the system.&lt;br &#x2F;&gt;
+This step will help you to make decisions on how to design the system knowing its expected
+scale, uptime, data storage and security requirements.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Durability (can data be lost?)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;as a User I want my data to not be lost, so I could access it later.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Fault-tolerant (what if something goes wrong&#x2F;down?)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;as a CTO I want the system to be resilient such that users will have the best experience with a system and
+for system to be self recoverable&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Scalable (is it possible to scale horizontally? what are the benefits of vertical scaling?)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;as a CTO I want the system to be easy to scale such that in case of user increase, system can be scaled
+without additional issues.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Highly available (how to set up? what are the properties within CAP theorem)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;do not forget the desired SLA in percentiles&lt;&#x2F;li&gt;
+&lt;li&gt;as a user I want system to be available 99.99 percent of time&lt;&#x2F;li&gt;
+&lt;li&gt;for distributed architecture it should affect
+&lt;ul&gt;
+&lt;li&gt;type of storage and what kind of guarantees it can give&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Modularity&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Property of the system such that some functionality can easily be used without affecting others.&lt;&#x2F;li&gt;
+&lt;li&gt;It can be a significant performance improvement for example to separate services by read and write
+applications improving overall availability and scalability of the system&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Responsive | Low latency&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;As a user I want it to respond very fast so I could check stories of my friends without waiting.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Security &lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;STRIDE_(security)&quot;&gt;(Stride)&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Spoofing (Authenticity)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Can someone pretend to be someone else?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Tampering (Integrity)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Can I modify the request parameters to get different behavior?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Repudiation (Non-reputability)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Can someone deny the performed this action?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Information disclosure (Confidentiality)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Users obtaining more information than they are allowed to. What information could get exposed to this
+asset, what&#x27;s contained in database?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;DoS (Availability)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Some actions could result in DoS, through spamming actions that require a lot of resources or result
+in quota limits.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Elevation of Privilege (Authorization)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Users obtaining more permissions than they are allowed to. Typical way to resolve is to use as little
+permissions as possible, to minimise the attack vector&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;capacity-estimation&quot;&gt;Capacity Estimation&lt;a class=&quot;zola-anchor&quot; href=&quot;#capacity-estimation&quot; aria-label=&quot;Anchor link for: capacity-estimation&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;This step helps to answer questions:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;what are the storage requirements?&lt;&#x2F;li&gt;
+&lt;li&gt;what is the expected volume of data?&lt;&#x2F;li&gt;
+&lt;li&gt;how many cache nodes to use?&lt;&#x2F;li&gt;
+&lt;li&gt;can be used for cost counting&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;It is better to define in the following order:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Load&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;QPS&lt;&#x2F;code&gt; - queries per second, as if how many times user want to ask system a specific question
+or to do specific task.&lt;&#x2F;p&gt;
+&lt;p&gt;It is calculated using the next formula:&lt;br &#x2F;&gt;
+&lt;code&gt;QPS&lt;&#x2F;code&gt; = &lt;code&gt;DAU&lt;&#x2F;code&gt; * &lt;code&gt;AVG_QUERIES_PER_DAY&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;RPS&lt;&#x2F;code&gt; - requests per second, referring to actual count of http requests.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Example, describing the difference between &lt;code&gt;QPS&lt;&#x2F;code&gt; and &lt;code&gt;RPS&lt;&#x2F;code&gt;:
+if we take google search as our target system to calculate QPS and RPS then
+&lt;code&gt;QPS&lt;&#x2F;code&gt; would be a measure of how many searches are done per second,
+meaning that our query is the search.
+&lt;code&gt;RPS&lt;&#x2F;code&gt; would be a measure of requests done to the system, and it would also include
+suggestion, static asset and other requests, thus it is always greater or equal to &lt;code&gt;QPS&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Storage&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;how your model looks like? calculate the size in bytes.&lt;&#x2F;li&gt;
+&lt;li&gt;how much storage will it take?
+&lt;ul&gt;
+&lt;li&gt;for one day&lt;&#x2F;li&gt;
+&lt;li&gt;for one month&lt;&#x2F;li&gt;
+&lt;li&gt;for 5 years&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Cache requirements&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;how much GB per day?&lt;&#x2F;li&gt;
+&lt;li&gt;how many machines needed to store your cache?
+&lt;ul&gt;
+&lt;li&gt;for example, you have 3TB of cache&lt;br &#x2F;&gt;
+and single machine is able to store 150GB&lt;br &#x2F;&gt;
+then you would need 20 servers to handle the load&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;high-level-design&quot;&gt;High Level Design&lt;a class=&quot;zola-anchor&quot; href=&quot;#high-level-design&quot; aria-label=&quot;Anchor link for: high-level-design&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Here you should create a diagram of the system noting the functional and non-functional requirements specified
+beforehand.&lt;&#x2F;p&gt;
+&lt;p&gt;Do not forget to note places where you&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;sacrifice consistency over availability;&lt;&#x2F;li&gt;
+&lt;li&gt;show the weakest spots and how to resolve them;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;api-design&quot;&gt;API Design&lt;a class=&quot;zola-anchor&quot; href=&quot;#api-design&quot; aria-label=&quot;Anchor link for: api-design&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Describe the APIs you are going to design.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;What protocol are you using?
+&lt;ul&gt;
+&lt;li&gt;HTTP | REST&lt;&#x2F;li&gt;
+&lt;li&gt;RPC | gRPC&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Sync or async? long polling vs polling?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;numbers-all-developers-should-know&quot;&gt;Numbers all developers should know&lt;a class=&quot;zola-anchor&quot; href=&quot;#numbers-all-developers-should-know&quot; aria-label=&quot;Anchor link for: numbers-all-developers-should-know&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;h2 id=&quot;power-of-two&quot;&gt;Power of two&lt;a class=&quot;zola-anchor&quot; href=&quot;#power-of-two&quot; aria-label=&quot;Anchor link for: power-of-two&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;hr &#x2F;&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;text-align: center&quot;&gt;POWER&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;APPROXIMATE VALUE&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;FULL NAME&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: center&quot;&gt;SHORT NAME&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: center&quot;&gt;10&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 thousand&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 Kilobyte&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: center&quot;&gt;1 KB&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: center&quot;&gt;20&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 million&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 Megabyte&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: center&quot;&gt;1 MB&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: center&quot;&gt;30&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 billion&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 Gigabyte&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: center&quot;&gt;1 GB&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: center&quot;&gt;40&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 trillion&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 Terabyte&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: center&quot;&gt;1 TB&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: center&quot;&gt;50&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 quadrillion&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 Petabyte&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: center&quot;&gt;1 PB&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;hr &#x2F;&gt;
+&lt;h2 id=&quot;latency-numbers&quot;&gt;Latency numbers&lt;a class=&quot;zola-anchor&quot; href=&quot;#latency-numbers&quot; aria-label=&quot;Anchor link for: latency-numbers&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;hr &#x2F;&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;text-align: left&quot;&gt;OPERATION NAME&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;TIME&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;L1 cache reference&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;0.5 ns&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Branch mis-predict&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;5 ns&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;L2 cache reference&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;7 ns&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Mutex lock&#x2F;unlock&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;100 ns&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Main memory reference&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;100 ns&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Compress 1K bytes with Zippy&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;10_000 ns&lt;&#x2F;code&gt;  = &lt;code&gt;10 µs&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Send 2K bytes over 1 Gbps network&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;20_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;20 µs&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Read 1MB sequentially from memory&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;250_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;250 µs&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Roundtrip within the same datacenter&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;500_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;500 µs&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Disk seek&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;10_000_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;10ms&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Read 1MB sequentially from the network&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;10_000_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;10 ms&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Read 1MB sequentially from disk&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;30_000_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;30 ms&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Send packet CA (California) -&amp;gt;Netherlands-&amp;gt;CA&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;150_000_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;150 ms&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;Taken from &lt;a href=&quot;https:&#x2F;&#x2F;colin-scott.github.io&#x2F;personal_website&#x2F;research&#x2F;interactive_latency.html&quot;&gt;Calculator per year by google developer&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;availability-numbers&quot;&gt;Availability numbers&lt;a class=&quot;zola-anchor&quot; href=&quot;#availability-numbers&quot; aria-label=&quot;Anchor link for: availability-numbers&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;div class=&quot;overflow-x-auto&quot;&gt;
+&lt;hr &#x2F;&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;text-align: left&quot;&gt;Availability %&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Downtime per day&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Downtime per week&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Downtime per month&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Downtime per year&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;99%&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;14.40 minutes&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1.68 hours&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;7.31 hours&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;3.65 days&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;99.99%&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;8.64 seconds&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1.01 minutes&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;4.38 minutes&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;52.6 minutes&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;99.999%&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;864 ms&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;6.05 seconds&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;26.30 seconds&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;5.26 minutes&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;99.9999%&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;86.40 ms&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;604.8 ms&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;2.64 seconds&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;31.56 seconds&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;hr &#x2F;&gt;
+&lt;&#x2F;div&gt;
+&lt;h1 id=&quot;tips&quot;&gt;Tips&lt;a class=&quot;zola-anchor&quot; href=&quot;#tips&quot; aria-label=&quot;Anchor link for: tips&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Back-of-the-envelope estimation is all about the process. Solving the problem is more important than obtaining
+results. Interviewers may test your problem-solving skills. Here are a few tips to follow:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Rounding and Approximation. It is difficult to perform complicated math operations during the interview. For
+example, what is the result of “99987 &#x2F; 9.1”? There is no need to spend valuable time to solve complicated math
+problems. Precision is not expected. Use round numbers and approximation to your advantage. The division question
+can be simplified as follows: “100,000 &#x2F; 10”.&lt;&#x2F;li&gt;
+&lt;li&gt;Write down your assumptions. It is a good idea to write down your assumptions to be referenced later.&lt;&#x2F;li&gt;
+&lt;li&gt;Label your units. When you write down “5”, does it mean 5 KB or 5 MB? You might confuse yourself with this. Write
+down the units because “5 MB” helps to remove ambiguity.&lt;&#x2F;li&gt;
+&lt;li&gt;Commonly asked back-of-the-envelope estimations: QPS, peak QPS, storage, cache, number of servers, etc. You can
+practice these calculations when preparing for an interview. Practice makes perfect.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;references&quot;&gt;References&lt;a class=&quot;zola-anchor&quot; href=&quot;#references&quot; aria-label=&quot;Anchor link for: references&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;itsallbinary.com&#x2F;system-design-back-of-envelop-calculations-for-storage-size-bandwidth-traffic-etc-estimates&quot;&gt;https:&#x2F;&#x2F;itsallbinary.com&#x2F;system-design-back-of-envelop-calculations-for-storage-size-bandwidth-traffic-etc-estimates&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;aaronice.gitbook.io&#x2F;system-design&#x2F;system-design-systematic-approach&quot;&gt;https:&#x2F;&#x2F;aaronice.gitbook.io&#x2F;system-design&#x2F;system-design-systematic-approach&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;gist.github.com&#x2F;vasanthk&#x2F;485d1c25737e8e72759f&quot;&gt;https:&#x2F;&#x2F;gist.github.com&#x2F;vasanthk&#x2F;485d1c25737e8e72759f&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;matthewdbill.medium.com&#x2F;back-of-envelope-calculations-cheat-sheet-d6758d276b05&quot;&gt;https:&#x2F;&#x2F;matthewdbill.medium.com&#x2F;back-of-envelope-calculations-cheat-sheet-d6758d276b05&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;!!! &lt;a href=&quot;https:&#x2F;&#x2F;blog.junianto.com&#x2F;2022&#x2F;06&#x2F;28&#x2F;back-of-the-envelope-estimation&#x2F;&quot;&gt;https:&#x2F;&#x2F;blog.junianto.com&#x2F;2022&#x2F;06&#x2F;28&#x2F;back-of-the-envelope-estimation&#x2F;&lt;&#x2F;a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;http:&#x2F;&#x2F;highscalability.com&#x2F;blog&#x2F;2011&#x2F;1&#x2F;26&#x2F;google-pro-tip-use-back-of-the-envelope-calculations-to-choo.html&quot;&gt;http:&#x2F;&#x2F;highscalability.com&#x2F;blog&#x2F;2011&#x2F;1&#x2F;26&#x2F;google-pro-tip-use-back-of-the-envelope-calculations-to-choo.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;donnemartin&#x2F;system-design-primer&quot;&gt;https:&#x2F;&#x2F;github.com&#x2F;donnemartin&#x2F;system-design-primer&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;colin-scott.github.io&#x2F;personal_website&#x2F;research&#x2F;interactive_latency.html&quot;&gt;https:&#x2F;&#x2F;colin-scott.github.io&#x2F;personal_website&#x2F;research&#x2F;interactive_latency.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;aws.amazon.com&#x2F;compute&#x2F;sla&#x2F;&quot;&gt;https:&#x2F;&#x2F;aws.amazon.com&#x2F;compute&#x2F;sla&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;cloud.google.com&#x2F;compute&#x2F;sla&quot;&gt;https:&#x2F;&#x2F;cloud.google.com&#x2F;compute&#x2F;sla&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;azure.microsoft.com&#x2F;en-us&#x2F;support&#x2F;legal&#x2F;sla&#x2F;summary&#x2F;&quot;&gt;https:&#x2F;&#x2F;azure.microsoft.com&#x2F;en-us&#x2F;support&#x2F;legal&#x2F;sla&#x2F;summary&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+      <item>
+          <title>Pull request checklist</title>
+          <pubDate>Sun, 15 Jan 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/blog/pull-request-checklist/</link>
+          <guid>https://yneth.github.io/blog/pull-request-checklist/</guid>
+          <description xml:base="https://yneth.github.io/blog/pull-request-checklist/">&lt;p&gt;For me, it is hard to keep all the rules in the head, so I decided
+to compile a list of my checks before publishing a pull-request.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;package version
+&lt;ul&gt;
+&lt;li&gt;breaking change - use MAJOR bump X.x.x&lt;&#x2F;li&gt;
+&lt;li&gt;new feature - MINOR x.X.x&lt;&#x2F;li&gt;
+&lt;li&gt;else -  PATCH x.x.X&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;API
+&lt;ul&gt;
+&lt;li&gt;correct status codes?&lt;&#x2F;li&gt;
+&lt;li&gt;extendable object?
+&lt;br&gt;
+using objects instead of plain lists or values allows you to extend requests or responses easier.&lt;br &#x2F;&gt;
+&lt;br&gt;
+&lt;em&gt;BAD&lt;&#x2F;em&gt;:&lt;pre style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot;&gt;&lt;code&gt;&lt;span&gt;[&amp;quot;name1&amp;quot;, &amp;quot;name&amp;quot;]  
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;em&gt;GOOD&lt;&#x2F;em&gt;:&lt;pre style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot;&gt;&lt;code&gt;&lt;span&gt;{  
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;quot;data&amp;quot;: [{&amp;quot;name&amp;quot;: &amp;quot;name1&amp;quot;}]  
+&lt;&#x2F;span&gt;&lt;span&gt;}  
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;hr &#x2F;&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;versioned API?&lt;&#x2F;li&gt;
+&lt;li&gt;swagger &#x2F; validation annotations&lt;&#x2F;li&gt;
+&lt;li&gt;openness - who should access the endpoint?
+&lt;ul&gt;
+&lt;li&gt;public&lt;&#x2F;li&gt;
+&lt;li&gt;private&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;how to update endpoint?
+&lt;ul&gt;
+&lt;li&gt;new field&lt;&#x2F;li&gt;
+&lt;li&gt;new API version&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Configuration
+&lt;ul&gt;
+&lt;li&gt;feature needs configurability?&lt;&#x2F;li&gt;
+&lt;li&gt;do not forget to update configurations in the integration tests&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Datasource
+&lt;ul&gt;
+&lt;li&gt;transactionally correct?
+&lt;ul&gt;
+&lt;li&gt;what if some system goes down?&lt;&#x2F;li&gt;
+&lt;li&gt;what if some system rolls back?&lt;&#x2F;li&gt;
+&lt;li&gt;what if multiple users are editing at the same time?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;validations are included?&lt;&#x2F;li&gt;
+&lt;li&gt;all queries are optimal?&lt;&#x2F;li&gt;
+&lt;li&gt;needs de-normalisation?&lt;&#x2F;li&gt;
+&lt;li&gt;CAP
+&lt;ul&gt;
+&lt;li&gt;available&lt;&#x2F;li&gt;
+&lt;li&gt;consistent&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Messaging
+&lt;ul&gt;
+&lt;li&gt;Kafka
+&lt;ul&gt;
+&lt;li&gt;consumer
+&lt;ul&gt;
+&lt;li&gt;at least once delivery is ok or has correct handling&lt;&#x2F;li&gt;
+&lt;li&gt;should be consistent? increase number of acks&lt;&#x2F;li&gt;
+&lt;li&gt;should read from the beginning? use default earliest offsets&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Caching
+&lt;ul&gt;
+&lt;li&gt;requires caching?
+&lt;ul&gt;
+&lt;li&gt;ttl?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Error handling
+&lt;ul&gt;
+&lt;li&gt;is there something you should handle beforehand?
+&lt;ul&gt;
+&lt;li&gt;specific DB exceptions&lt;&#x2F;li&gt;
+&lt;li&gt;specific API exceptions&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;do you need to handle exceptions generically?&lt;&#x2F;li&gt;
+&lt;li&gt;do you need to handle exceptions separately?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Security
+&lt;ul&gt;
+&lt;li&gt;make sure not to include sensitive data in logs&lt;&#x2F;li&gt;
+&lt;li&gt;sensitive data excluded from &lt;code&gt;toString&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Monitoring
+&lt;ul&gt;
+&lt;li&gt;metrics
+&lt;ul&gt;
+&lt;li&gt;API&lt;&#x2F;li&gt;
+&lt;li&gt;Datasource&lt;&#x2F;li&gt;
+&lt;li&gt;Cache&lt;&#x2F;li&gt;
+&lt;li&gt;HTTP Clients&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;logs
+&lt;ul&gt;
+&lt;li&gt;method start traced correctly&lt;&#x2F;li&gt;
+&lt;li&gt;method completion traced correctly&lt;&#x2F;li&gt;
+&lt;li&gt;errors are logged once with &lt;code&gt;incidentId&lt;&#x2F;code&gt;, log or re-throw strategy&lt;&#x2F;li&gt;
+&lt;li&gt;warnings for unusual behaviours&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;should include admin endpoint to view the state if any?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Tests
+&lt;ul&gt;
+&lt;li&gt;all cases covered?&lt;&#x2F;li&gt;
+&lt;li&gt;contracts
+&lt;ul&gt;
+&lt;li&gt;should other services update contracts as well?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Networking
+&lt;ul&gt;
+&lt;li&gt;retries
+&lt;ul&gt;
+&lt;li&gt;idempotency handled?&lt;&#x2F;li&gt;
+&lt;li&gt;is using correct retry mechanism in case of service discovery?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;timeouts&lt;&#x2F;li&gt;
+&lt;li&gt;circuit breaker timeout
+&lt;ul&gt;
+&lt;li&gt;does it have meaningful fallback to return in case of errors?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Docs
+&lt;ul&gt;
+&lt;li&gt;how to&lt;&#x2F;li&gt;
+&lt;li&gt;configuration options&lt;&#x2F;li&gt;
+&lt;li&gt;migration&lt;&#x2F;li&gt;
+&lt;li&gt;REST&lt;&#x2F;li&gt;
+&lt;li&gt;diagrams&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Third Party users
+&lt;ul&gt;
+&lt;li&gt;does it break someone?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Process
+&lt;ul&gt;
+&lt;li&gt;should you split task and move parts to other sprints?  &lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+      <item>
+          <title>flush etc&#x2F;hosts</title>
+          <pubDate>Thu, 14 Jul 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/etc-hosts-flush/</link>
+          <guid>https://yneth.github.io/snippets/etc-hosts-flush/</guid>
+          <description xml:base="https://yneth.github.io/snippets/etc-hosts-flush/">&lt;p&gt;Run &lt;code&gt;sudo dscacheutil -flushcache&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+</description>
+      </item>
+      <item>
+          <title>traffic limiting in bash</title>
+          <pubDate>Sat, 09 Jul 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/traffic-limiting/</link>
+          <guid>https://yneth.github.io/snippets/traffic-limiting/</guid>
+          <description xml:base="https://yneth.github.io/snippets/traffic-limiting/">&lt;p&gt;Run &lt;code&gt;wondershaper -a ${net_iface_name} -u ${upload_bytes} -d ${download_bytes}&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Sources: &lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;magnific0&#x2F;wondershaper&quot;&gt;github&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+      <item>
+          <title>github actions on PRs</title>
+          <pubDate>Thu, 23 Jun 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/github-pr/</link>
+          <guid>https://yneth.github.io/snippets/github-pr/</guid>
+          <description xml:base="https://yneth.github.io/snippets/github-pr/">&lt;p&gt;To run workflow with &lt;code&gt;workflow_dispatch&lt;&#x2F;code&gt; type on non main branch.&lt;&#x2F;p&gt;
+&lt;p&gt;Run &lt;code&gt;gh workflow run workflow --ref branch-name -f myparameter=myvalue&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Sources:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;docs.github.com&#x2F;en&#x2F;actions&#x2F;managing-workflow-runs&#x2F;manually-running-a-workflow#running-a-workflow-using-github-cli&quot;&gt;github docs&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+      <item>
+          <title>how to set process priority</title>
+          <pubDate>Sat, 11 Jun 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/set-process-priority/</link>
+          <guid>https://yneth.github.io/snippets/set-process-priority/</guid>
+          <description xml:base="https://yneth.github.io/snippets/set-process-priority/">&lt;p&gt;To check niceness: &lt;code&gt;ps -eo pid,ppid,ni,comm&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;or &lt;code&gt;NI&lt;&#x2F;code&gt; column in &lt;code&gt;htop&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;To set cpu priority: &lt;code&gt;nice -n -10 …&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To set io priority: &lt;code&gt;ionice ...&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;It is composable with &lt;code&gt;nice&lt;&#x2F;code&gt; as child processes inherit parent attributes.&lt;&#x2F;p&gt;
+&lt;p&gt;Sources:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Nice_(Unix)&quot;&gt;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Nice_(Unix)&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;nice&quot;&gt;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;nice&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;ionice&quot;&gt;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;ionice&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.tecmint.com&#x2F;set-linux-process-priority-using-nice-and-renice-commands&#x2F;&quot;&gt;https:&#x2F;&#x2F;www.tecmint.com&#x2F;set-linux-process-priority-using-nice-and-renice-commands&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Child_process&quot;&gt;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Child_process&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;stackoverflow.com&#x2F;questions&#x2F;45970377&#x2F;combining-ionice-and-nice-in-linux-and-transitive-priorities&quot;&gt;https:&#x2F;&#x2F;stackoverflow.com&#x2F;questions&#x2F;45970377&#x2F;combining-ionice-and-nice-in-linux-and-transitive-priorities&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+      <item>
+          <title>links to test tls connection</title>
+          <pubDate>Thu, 05 May 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/links-to-check-tls/</link>
+          <guid>https://yneth.github.io/snippets/links-to-check-tls/</guid>
+          <description xml:base="https://yneth.github.io/snippets/links-to-check-tls/">&lt;p&gt;Links: &lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;expired.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;expired.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;wrong.host.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;wrong.host.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;self-signed.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;self-signed.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;untrusted-root.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;untrusted-root.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;revoked.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;revoked.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;pinning-test.badssl.com&#x2F;&quot;&gt;https:&#x2F;&#x2F;pinning-test.badssl.com&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Sources:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;sfackler&#x2F;rust-native-tls&#x2F;pull&#x2F;56&quot;&gt;https:&#x2F;&#x2F;github.com&#x2F;sfackler&#x2F;rust-native-tls&#x2F;pull&#x2F;56&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+      <item>
+          <title>bash http server with fixed response</title>
+          <pubDate>Mon, 18 Apr 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/bash-http-server/</link>
+          <guid>https://yneth.github.io/snippets/bash-http-server/</guid>
+          <description xml:base="https://yneth.github.io/snippets/bash-http-server/">&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;while &lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;true&lt;&#x2F;span&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;; do &lt;&#x2F;span&gt;&lt;span&gt;{ 
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b39f04;&quot;&gt;echo &lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;-e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;HTTP&#x2F;1.1 400 Bad Request\nContent-Type: application&#x2F;json\n\n{&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;foo&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;bar&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;}&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;} &lt;&#x2F;span&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;| &lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;nc -l&lt;&#x2F;span&gt;&lt;span&gt; 8082&lt;&#x2F;span&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;; done
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</description>
+      </item>
+      <item>
+          <title>jump to previous cd location</title>
+          <pubDate>Wed, 13 Apr 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/prev-cd-location/</link>
+          <guid>https://yneth.github.io/snippets/prev-cd-location/</guid>
+          <description xml:base="https://yneth.github.io/snippets/prev-cd-location/">&lt;p&gt;&lt;code&gt;cd -&lt;&#x2F;code&gt; similar to &lt;code&gt;git checkout -&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;to get to previous cd location or switch to previous branch accordingly.&lt;&#x2F;p&gt;
+</description>
+      </item>
+      <item>
+          <title>setup notification on ssh session</title>
+          <pubDate>Wed, 09 Mar 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/notification-on-ssh-login/</link>
+          <guid>https://yneth.github.io/snippets/notification-on-ssh-login/</guid>
+          <description xml:base="https://yneth.github.io/snippets/notification-on-ssh-login/">&lt;p&gt;Before executing script make sure &lt;code&gt;&#x2F;etc&#x2F;profile&lt;&#x2F;code&gt; runs scripts from &lt;code&gt;&#x2F;etc&#x2F;profile.d&lt;&#x2F;code&gt; and
+do not forget to replace all required variables for telegram API.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;cat &lt;&#x2F;span&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;&amp;lt;&amp;lt;EOF &amp;gt;&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;etc&#x2F;profile.d&#x2F;ssh_notif.sh
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;#!&#x2F;bin&#x2F;sh
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;caller=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;(ps -o comm= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;PPID)&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;if [ &amp;quot;sshd&amp;quot; = &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;caller&amp;quot; ]; then
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;  BOT_TOKEN=&amp;#39;&amp;lt;YOUR_TOKEN_HERE&amp;gt;&amp;#39;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;  CHAT_ID=&amp;#39;&amp;lt;YOUR_CHAT_ID_HERE&amp;gt;&amp;#39;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;  MESSAGE=&amp;#39;login&amp;#39;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;  curl &amp;quot;https:&#x2F;&#x2F;api.telegram.org&#x2F;bot&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;BOT_TOKEN&#x2F;sendMessage&amp;quot; \
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;    -H &amp;#39;Content-Type: application&#x2F;json&amp;#39; \
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;    -d &amp;quot;{&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;chat_id&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;CHAT_ID, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;text&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;MESSAGE&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;}&amp;quot; &amp;amp;&amp;gt; &#x2F;dev&#x2F;null &amp;amp;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;fi
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;EOF
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;chmod&lt;&#x2F;span&gt;&lt;span&gt; +x &#x2F;etc&#x2F;profile.d&#x2F;ssh_notif.sh
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</description>
+      </item>
+      <item>
+          <title>how to setup vpn on remote linux machine</title>
+          <pubDate>Tue, 01 Mar 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/vpn-on-remote-linux-machine/</link>
+          <guid>https://yneth.github.io/snippets/vpn-on-remote-linux-machine/</guid>
+          <description xml:base="https://yneth.github.io/snippets/vpn-on-remote-linux-machine/">&lt;pre data-lang=&quot;text&quot; style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot; class=&quot;language-text &quot;&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;&lt;span&gt;a.b.c.d    — public IP
+&lt;&#x2F;span&gt;&lt;span&gt;a.b.c.0&#x2F;24 — public IP subnet
+&lt;&#x2F;span&gt;&lt;span&gt;x.x.x.1     — gateway
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;To find gateway: &lt;code&gt;ip route | grep default&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;ip&lt;&#x2F;span&gt;&lt;span&gt; rule add table 128 from a.b.c.d`
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;ip&lt;&#x2F;span&gt;&lt;span&gt; route add table 128 to a.b.c.0&#x2F;24 dev eth0
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;ip&lt;&#x2F;span&gt;&lt;span&gt; route add table 128 default via x.x.x.1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;and make sure table 128 is first after loopback in the rules.&lt;&#x2F;p&gt;
+&lt;p&gt;To check: &lt;code&gt;ip rule&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To change order: &lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;ip&lt;&#x2F;span&gt;&lt;span&gt; rule add pref YYY from a.b.c.d lookup 128
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;ip&lt;&#x2F;span&gt;&lt;span&gt; rule del pref XXX from a.b.c.d lookup 128
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;where &lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;XXX&lt;&#x2F;code&gt; is the current priority value &lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;YYY&lt;&#x2F;code&gt; &amp;gt; 0 &amp;amp;&amp;amp; &lt;code&gt;YYY&lt;&#x2F;code&gt; &amp;lt; (first after loopback)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Sources:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;8&#x2F;ip&quot;&gt;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;8&#x2F;ip&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+    </channel>
+</rss>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Yneth Blog - telegram</title>
+      <link>https://yneth.github.io</link>
+      <description>Yneth blog</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://yneth.github.io/tags/telegram/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Wed, 09 Mar 2022 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>setup notification on ssh session</title>
+          <pubDate>Wed, 09 Mar 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/notification-on-ssh-login/</link>
+          <guid>https://yneth.github.io/snippets/notification-on-ssh-login/</guid>
+          <description xml:base="https://yneth.github.io/snippets/notification-on-ssh-login/">&lt;p&gt;Before executing script make sure &lt;code&gt;&#x2F;etc&#x2F;profile&lt;&#x2F;code&gt; runs scripts from &lt;code&gt;&#x2F;etc&#x2F;profile.d&lt;&#x2F;code&gt; and
+do not forget to replace all required variables for telegram API.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;cat &lt;&#x2F;span&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;&amp;lt;&amp;lt;EOF &amp;gt;&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;etc&#x2F;profile.d&#x2F;ssh_notif.sh
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;#!&#x2F;bin&#x2F;sh
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;caller=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;(ps -o comm= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;PPID)&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;if [ &amp;quot;sshd&amp;quot; = &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;caller&amp;quot; ]; then
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;  BOT_TOKEN=&amp;#39;&amp;lt;YOUR_TOKEN_HERE&amp;gt;&amp;#39;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;  CHAT_ID=&amp;#39;&amp;lt;YOUR_CHAT_ID_HERE&amp;gt;&amp;#39;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;  MESSAGE=&amp;#39;login&amp;#39;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;  curl &amp;quot;https:&#x2F;&#x2F;api.telegram.org&#x2F;bot&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;BOT_TOKEN&#x2F;sendMessage&amp;quot; \
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;    -H &amp;#39;Content-Type: application&#x2F;json&amp;#39; \
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;    -d &amp;quot;{&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;chat_id&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;CHAT_ID, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;text&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;MESSAGE&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#aeb52b;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;&amp;quot;}&amp;quot; &amp;amp;&amp;gt; &#x2F;dev&#x2F;null &amp;amp;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d07711;&quot;&gt;fi
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#72ab00;&quot;&gt;EOF
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;chmod&lt;&#x2F;span&gt;&lt;span&gt; +x &#x2F;etc&#x2F;profile.d&#x2F;ssh_notif.sh
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</description>
+      </item>
+    </channel>
+</rss>

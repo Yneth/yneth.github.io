@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Yneth Blog - cd</title>
+      <link>https://yneth.github.io</link>
+      <description>Yneth blog</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://yneth.github.io/tags/cd/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Wed, 13 Apr 2022 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>jump to previous cd location</title>
+          <pubDate>Wed, 13 Apr 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/prev-cd-location/</link>
+          <guid>https://yneth.github.io/snippets/prev-cd-location/</guid>
+          <description xml:base="https://yneth.github.io/snippets/prev-cd-location/">&lt;p&gt;&lt;code&gt;cd -&lt;&#x2F;code&gt; similar to &lt;code&gt;git checkout -&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;to get to previous cd location or switch to previous branch accordingly.&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>

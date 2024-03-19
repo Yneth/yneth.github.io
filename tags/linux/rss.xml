@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Yneth Blog - linux</title>
+      <link>https://yneth.github.io</link>
+      <description>Yneth blog</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://yneth.github.io/tags/linux/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Sat, 11 Jun 2022 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>how to set process priority</title>
+          <pubDate>Sat, 11 Jun 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/set-process-priority/</link>
+          <guid>https://yneth.github.io/snippets/set-process-priority/</guid>
+          <description xml:base="https://yneth.github.io/snippets/set-process-priority/">&lt;p&gt;To check niceness: &lt;code&gt;ps -eo pid,ppid,ni,comm&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;or &lt;code&gt;NI&lt;&#x2F;code&gt; column in &lt;code&gt;htop&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;To set cpu priority: &lt;code&gt;nice -n -10 …&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To set io priority: &lt;code&gt;ionice ...&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;It is composable with &lt;code&gt;nice&lt;&#x2F;code&gt; as child processes inherit parent attributes.&lt;&#x2F;p&gt;
+&lt;p&gt;Sources:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Nice_(Unix)&quot;&gt;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Nice_(Unix)&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;nice&quot;&gt;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;nice&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;ionice&quot;&gt;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;1&#x2F;ionice&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.tecmint.com&#x2F;set-linux-process-priority-using-nice-and-renice-commands&#x2F;&quot;&gt;https:&#x2F;&#x2F;www.tecmint.com&#x2F;set-linux-process-priority-using-nice-and-renice-commands&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Child_process&quot;&gt;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Child_process&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;stackoverflow.com&#x2F;questions&#x2F;45970377&#x2F;combining-ionice-and-nice-in-linux-and-transitive-priorities&quot;&gt;https:&#x2F;&#x2F;stackoverflow.com&#x2F;questions&#x2F;45970377&#x2F;combining-ionice-and-nice-in-linux-and-transitive-priorities&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+      <item>
+          <title>how to setup vpn on remote linux machine</title>
+          <pubDate>Tue, 01 Mar 2022 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/snippets/vpn-on-remote-linux-machine/</link>
+          <guid>https://yneth.github.io/snippets/vpn-on-remote-linux-machine/</guid>
+          <description xml:base="https://yneth.github.io/snippets/vpn-on-remote-linux-machine/">&lt;pre data-lang=&quot;text&quot; style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot; class=&quot;language-text &quot;&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;&lt;span&gt;a.b.c.d    — public IP
+&lt;&#x2F;span&gt;&lt;span&gt;a.b.c.0&#x2F;24 — public IP subnet
+&lt;&#x2F;span&gt;&lt;span&gt;x.x.x.1     — gateway
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;To find gateway: &lt;code&gt;ip route | grep default&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;ip&lt;&#x2F;span&gt;&lt;span&gt; rule add table 128 from a.b.c.d`
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;ip&lt;&#x2F;span&gt;&lt;span&gt; route add table 128 to a.b.c.0&#x2F;24 dev eth0
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;ip&lt;&#x2F;span&gt;&lt;span&gt; route add table 128 default via x.x.x.1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;and make sure table 128 is first after loopback in the rules.&lt;&#x2F;p&gt;
+&lt;p&gt;To check: &lt;code&gt;ip rule&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To change order: &lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;ip&lt;&#x2F;span&gt;&lt;span&gt; rule add pref YYY from a.b.c.d lookup 128
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#5597d6;&quot;&gt;ip&lt;&#x2F;span&gt;&lt;span&gt; rule del pref XXX from a.b.c.d lookup 128
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;where &lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;XXX&lt;&#x2F;code&gt; is the current priority value &lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;YYY&lt;&#x2F;code&gt; &amp;gt; 0 &amp;amp;&amp;amp; &lt;code&gt;YYY&lt;&#x2F;code&gt; &amp;lt; (first after loopback)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Sources:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;8&#x2F;ip&quot;&gt;https:&#x2F;&#x2F;linux.die.net&#x2F;man&#x2F;8&#x2F;ip&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+    </channel>
+</rss>

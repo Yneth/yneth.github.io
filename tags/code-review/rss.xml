@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Yneth Blog - code_review</title>
+      <link>https://yneth.github.io</link>
+      <description>Yneth blog</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://yneth.github.io/tags/code-review/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Sun, 15 Jan 2023 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Pull request checklist</title>
+          <pubDate>Sun, 15 Jan 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/blog/pull-request-checklist/</link>
+          <guid>https://yneth.github.io/blog/pull-request-checklist/</guid>
+          <description xml:base="https://yneth.github.io/blog/pull-request-checklist/">&lt;p&gt;For me, it is hard to keep all the rules in the head, so I decided
+to compile a list of my checks before publishing a pull-request.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;package version
+&lt;ul&gt;
+&lt;li&gt;breaking change - use MAJOR bump X.x.x&lt;&#x2F;li&gt;
+&lt;li&gt;new feature - MINOR x.X.x&lt;&#x2F;li&gt;
+&lt;li&gt;else -  PATCH x.x.X&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;API
+&lt;ul&gt;
+&lt;li&gt;correct status codes?&lt;&#x2F;li&gt;
+&lt;li&gt;extendable object?
+&lt;br&gt;
+using objects instead of plain lists or values allows you to extend requests or responses easier.&lt;br &#x2F;&gt;
+&lt;br&gt;
+&lt;em&gt;BAD&lt;&#x2F;em&gt;:&lt;pre style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot;&gt;&lt;code&gt;&lt;span&gt;[&amp;quot;name1&amp;quot;, &amp;quot;name&amp;quot;]  
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;em&gt;GOOD&lt;&#x2F;em&gt;:&lt;pre style=&quot;background-color:#f5f5f5;color:#1f1f1f;&quot;&gt;&lt;code&gt;&lt;span&gt;{  
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;quot;data&amp;quot;: [{&amp;quot;name&amp;quot;: &amp;quot;name1&amp;quot;}]  
+&lt;&#x2F;span&gt;&lt;span&gt;}  
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;hr &#x2F;&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;versioned API?&lt;&#x2F;li&gt;
+&lt;li&gt;swagger &#x2F; validation annotations&lt;&#x2F;li&gt;
+&lt;li&gt;openness - who should access the endpoint?
+&lt;ul&gt;
+&lt;li&gt;public&lt;&#x2F;li&gt;
+&lt;li&gt;private&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;how to update endpoint?
+&lt;ul&gt;
+&lt;li&gt;new field&lt;&#x2F;li&gt;
+&lt;li&gt;new API version&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Configuration
+&lt;ul&gt;
+&lt;li&gt;feature needs configurability?&lt;&#x2F;li&gt;
+&lt;li&gt;do not forget to update configurations in the integration tests&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Datasource
+&lt;ul&gt;
+&lt;li&gt;transactionally correct?
+&lt;ul&gt;
+&lt;li&gt;what if some system goes down?&lt;&#x2F;li&gt;
+&lt;li&gt;what if some system rolls back?&lt;&#x2F;li&gt;
+&lt;li&gt;what if multiple users are editing at the same time?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;validations are included?&lt;&#x2F;li&gt;
+&lt;li&gt;all queries are optimal?&lt;&#x2F;li&gt;
+&lt;li&gt;needs de-normalisation?&lt;&#x2F;li&gt;
+&lt;li&gt;CAP
+&lt;ul&gt;
+&lt;li&gt;available&lt;&#x2F;li&gt;
+&lt;li&gt;consistent&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Messaging
+&lt;ul&gt;
+&lt;li&gt;Kafka
+&lt;ul&gt;
+&lt;li&gt;consumer
+&lt;ul&gt;
+&lt;li&gt;at least once delivery is ok or has correct handling&lt;&#x2F;li&gt;
+&lt;li&gt;should be consistent? increase number of acks&lt;&#x2F;li&gt;
+&lt;li&gt;should read from the beginning? use default earliest offsets&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Caching
+&lt;ul&gt;
+&lt;li&gt;requires caching?
+&lt;ul&gt;
+&lt;li&gt;ttl?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Error handling
+&lt;ul&gt;
+&lt;li&gt;is there something you should handle beforehand?
+&lt;ul&gt;
+&lt;li&gt;specific DB exceptions&lt;&#x2F;li&gt;
+&lt;li&gt;specific API exceptions&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;do you need to handle exceptions generically?&lt;&#x2F;li&gt;
+&lt;li&gt;do you need to handle exceptions separately?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Security
+&lt;ul&gt;
+&lt;li&gt;make sure not to include sensitive data in logs&lt;&#x2F;li&gt;
+&lt;li&gt;sensitive data excluded from &lt;code&gt;toString&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Monitoring
+&lt;ul&gt;
+&lt;li&gt;metrics
+&lt;ul&gt;
+&lt;li&gt;API&lt;&#x2F;li&gt;
+&lt;li&gt;Datasource&lt;&#x2F;li&gt;
+&lt;li&gt;Cache&lt;&#x2F;li&gt;
+&lt;li&gt;HTTP Clients&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;logs
+&lt;ul&gt;
+&lt;li&gt;method start traced correctly&lt;&#x2F;li&gt;
+&lt;li&gt;method completion traced correctly&lt;&#x2F;li&gt;
+&lt;li&gt;errors are logged once with &lt;code&gt;incidentId&lt;&#x2F;code&gt;, log or re-throw strategy&lt;&#x2F;li&gt;
+&lt;li&gt;warnings for unusual behaviours&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;should include admin endpoint to view the state if any?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Tests
+&lt;ul&gt;
+&lt;li&gt;all cases covered?&lt;&#x2F;li&gt;
+&lt;li&gt;contracts
+&lt;ul&gt;
+&lt;li&gt;should other services update contracts as well?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Networking
+&lt;ul&gt;
+&lt;li&gt;retries
+&lt;ul&gt;
+&lt;li&gt;idempotency handled?&lt;&#x2F;li&gt;
+&lt;li&gt;is using correct retry mechanism in case of service discovery?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;timeouts&lt;&#x2F;li&gt;
+&lt;li&gt;circuit breaker timeout
+&lt;ul&gt;
+&lt;li&gt;does it have meaningful fallback to return in case of errors?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Docs
+&lt;ul&gt;
+&lt;li&gt;how to&lt;&#x2F;li&gt;
+&lt;li&gt;configuration options&lt;&#x2F;li&gt;
+&lt;li&gt;migration&lt;&#x2F;li&gt;
+&lt;li&gt;REST&lt;&#x2F;li&gt;
+&lt;li&gt;diagrams&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Third Party users
+&lt;ul&gt;
+&lt;li&gt;does it break someone?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Process
+&lt;ul&gt;
+&lt;li&gt;should you split task and move parts to other sprints?  &lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+    </channel>
+</rss>

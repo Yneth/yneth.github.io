@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Yneth Blog - authentication</title>
+      <link>https://yneth.github.io</link>
+      <description>Yneth blog</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://yneth.github.io/tags/authentication/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Wed, 01 Feb 2023 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>how to refresh tokens in SPA and mobile apps securely</title>
+          <pubDate>Wed, 01 Feb 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/blog/refresh-for-public-clients/</link>
+          <guid>https://yneth.github.io/blog/refresh-for-public-clients/</guid>
+          <description xml:base="https://yneth.github.io/blog/refresh-for-public-clients/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;a class=&quot;zola-anchor&quot; href=&quot;#introduction&quot; aria-label=&quot;Anchor link for: introduction&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;div class=&quot;alert&quot;&gt;DRAFT, may contain incomplete info...&lt;&#x2F;div&gt;
+&lt;p&gt;In this article I&#x27;d like to share the results of my research on how to prolong user session lifetime for OAuth public
+clients securely. You can skip this part if you are already familiar with OAuth protocol.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;oauth-definition&quot;&gt;OAuth definition&lt;a class=&quot;zola-anchor&quot; href=&quot;#oauth-definition&quot; aria-label=&quot;Anchor link for: oauth-definition&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;OAuth 2.0 is an open authentication specification that provides us a secure mechanism to access secured third party
+resources without sharing passwords. This mechanism involves the following parties:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;resource owner (user);&lt;&#x2F;li&gt;
+&lt;li&gt;client (application);&lt;&#x2F;li&gt;
+&lt;li&gt;resource server (secured api that stores user data);&lt;&#x2F;li&gt;
+&lt;li&gt;authorization server.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Where the &lt;strong&gt;user&lt;&#x2F;strong&gt; is using &lt;strong&gt;application&lt;&#x2F;strong&gt; (&lt;strong&gt;client&lt;&#x2F;strong&gt;) which wants to access &lt;strong&gt;resource server&lt;&#x2F;strong&gt; with &lt;strong&gt;authorization
+server&lt;&#x2F;strong&gt;
+issued tokens.&lt;&#x2F;p&gt;
+&lt;p&gt;A good example would be a Google calendar extension. The developer of an extension needs to access users&#x27; calendars via
+Google calendar API in order to do this he needs to use Google OAuth to receive user tokens.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;oauth-implementation&quot;&gt;OAuth implementation&lt;a class=&quot;zola-anchor&quot; href=&quot;#oauth-implementation&quot; aria-label=&quot;Anchor link for: oauth-implementation&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;To support authentication in the simplest form, OAuth server should implement the following endpoints:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;authorize endpoint - the one that initiates the login flow and renders login form;&lt;&#x2F;li&gt;
+&lt;li&gt;token endpoint - the one that exchanges grant to tokens;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;br&gt;
+&lt;p&gt;The most basic flow is called &lt;code&gt;authorization_code&lt;&#x2F;code&gt;. First, user initiates the login by visiting authorize endpoint which
+renders the login page. As soon as credentials are entered and validated the user is redirected back to application that
+initiated the login with success or error request parameters. In case of success he would retrieve &lt;code&gt;authorization_code&lt;&#x2F;code&gt;
+that is then exchanged to &lt;code&gt;access_token &#x2F; refresh_token&lt;&#x2F;code&gt; pair by the user of token endpoint.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;authorization_code_flow_webserver&quot;&gt;Diagram describing the &lt;code&gt;authorization_code&lt;&#x2F;code&gt; flow:&lt;a class=&quot;zola-anchor&quot; href=&quot;#authorization_code_flow_webserver&quot; aria-label=&quot;Anchor link for: authorization_code_flow_webserver&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;img src=&quot;..&#x2F;2023-02-01_authorization_code_flow.png&quot; alt=&quot;authorization_code flow&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Here we can see some parameters in both endpoints, lets&#x27; dive into them and check each endpoint API closely.&lt;&#x2F;p&gt;
+&lt;div class=&quot;note&quot;&gt;
+NOTE: client in current context is an application that needs to access resource owner data.
+&lt;&#x2F;div&gt;
+&lt;br&gt;
+&lt;h3 id=&quot;authorize-endpoint-parameters&quot;&gt;Authorize endpoint parameters&lt;a class=&quot;zola-anchor&quot; href=&quot;#authorize-endpoint-parameters&quot; aria-label=&quot;Anchor link for: authorize-endpoint-parameters&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;client_id&lt;&#x2F;code&gt; - id of the registered client in the Authorization Server&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;redirect_uri&lt;&#x2F;code&gt; - redirect uri that was defined during client creation&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;scope&lt;&#x2F;code&gt; - authorization part of the authentication flow, what APIs users of the client will be allowed to use on
+the &lt;code&gt;resource server&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;state&lt;&#x2F;code&gt; - random string to prevent CSRF attacks&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;response_type&lt;&#x2F;code&gt; - the type of the response user wants to receive, in our case it is &amp;quot;code&amp;quot; which refers
+to &lt;code&gt;authorization_code&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;br&gt;
+&lt;h3 id=&quot;token-endpoint-parameters&quot;&gt;Token Endpoint parameters&lt;a class=&quot;zola-anchor&quot; href=&quot;#token-endpoint-parameters&quot; aria-label=&quot;Anchor link for: token-endpoint-parameters&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;client_id&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;client_secret&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;grant_type&lt;&#x2F;code&gt; - type of grant, that was issued by authorization server as a handle to receive tokens for requested
+user;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;code&lt;&#x2F;code&gt; - &lt;code&gt;authorization_code&lt;&#x2F;code&gt; as a temporary random value that works as a handle to receive tokens;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h2 id=&quot;client-and-client-authentication-method-types&quot;&gt;Client and client authentication method types&lt;a class=&quot;zola-anchor&quot; href=&quot;#client-and-client-authentication-method-types&quot; aria-label=&quot;Anchor link for: client-and-client-authentication-method-types&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;The example we have seen describes the flow of &lt;code&gt;confidential client&lt;&#x2F;code&gt; authorization using authentication method
+called &lt;code&gt;client_secret_post&lt;&#x2F;code&gt;, meaning that user should send &lt;code&gt;client_secret&lt;&#x2F;code&gt; to token endpoint using POST HTTP method.&lt;&#x2F;p&gt;
+&lt;p&gt;OAuth specification describes different types of clients such as &lt;code&gt;confidential&lt;&#x2F;code&gt; and &lt;code&gt;public&lt;&#x2F;code&gt;. In layman terms,
+confidential is a type of client that can &amp;quot;securely&amp;quot; store secrets without leaking them to malicious users and most
+often it is a backend, whereas public clients are browser or mobile based apps, where secrets can be found via source
+code review.&lt;&#x2F;p&gt;
+&lt;p&gt;OAuth specification also states the different client authentication methods, widely used ones are:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;client_secret_post&lt;&#x2F;code&gt; - it is when the application MUST send &lt;code&gt;client_secret&lt;&#x2F;code&gt; on token endpoint requests&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;none&lt;&#x2F;code&gt; - in this case client is allowed to retrieve tokens from token endpoint without use of any secrets;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;br&gt;
+&lt;p&gt;You may start thinking why would I need &lt;code&gt;client_secret&lt;&#x2F;code&gt; and the answer is simple, it is the token that proves the
+identity of the client and allows your application receive tokens, such that no one else could, unless your secret is
+compromised. Why is identity proof needed for client?&lt;br &#x2F;&gt;
+&lt;code&gt;authorization_code&lt;&#x2F;code&gt; is weak from security standpoint, it may be hijacked in the process either during redirect or from
+logs etc. or lets&#x27; imagine if there was no &lt;code&gt;client_secret&lt;&#x2F;code&gt; at all, then it would open the endpoint to CSRF and
+enumeration attacks.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;public-clients-and-pkce-extension&quot;&gt;Public clients and PKCE extension&lt;a class=&quot;zola-anchor&quot; href=&quot;#public-clients-and-pkce-extension&quot; aria-label=&quot;Anchor link for: public-clients-and-pkce-extension&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;Now lets&#x27; focus on the second client authentication method: &lt;code&gt;none&lt;&#x2F;code&gt;. It is useful for public clients that are unable to
+store and use secrets. As previously said this authentication method does not require application to
+send &lt;code&gt;client_secret&lt;&#x2F;code&gt;, to prove the identity of the app there was introduced OAuth 2.1 specification with Proof Key for
+Code Exchange extension to the existing flow.&lt;&#x2F;p&gt;
+&lt;p&gt;In short, it is adding a couple of new parameters to authrorize and token endpoints:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;code_challenge&lt;&#x2F;code&gt; -- represents some hashed string, used in authorize endpoint;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;code_challenge_method&lt;&#x2F;code&gt; -- the hashing method, used in authorize endpoint;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;code_verifier&lt;&#x2F;code&gt; -- original string, used in token endpoint;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;br&gt;
+&lt;h3 id=&quot;the-diagram-describing-pkce-public-client-flow&quot;&gt;The diagram describing PKCE public client flow:&lt;a class=&quot;zola-anchor&quot; href=&quot;#the-diagram-describing-pkce-public-client-flow&quot; aria-label=&quot;Anchor link for: the-diagram-describing-pkce-public-client-flow&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;img src=&quot;..&#x2F;2023-02-01_authorization_code_with_pkce_flow.png&quot; alt=&quot;authorization_code flow with PKCE&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;To use PKCE extension application MUST provide hashed &lt;code&gt;code_challenge&lt;&#x2F;code&gt; during authorize endpoint call that OAuth Server
+MUST store, then at the moment of token verification OAuth Server will validate that &lt;code&gt;code_challenge&lt;&#x2F;code&gt; matches and will
+validate that &lt;code&gt;code_challenge_method(code_verifier)&lt;&#x2F;code&gt; is equal to &lt;code&gt;code_challenge&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;This extension mitigates CSRF attacks. Lets&#x27; imagine that attacker crafted a webpage to handle code returned from
+authorization server. Now in order to successfully exchange the code to tokens he would need to send &lt;code&gt;code_verifier&lt;&#x2F;code&gt;
+too, which is very hard to guess from &lt;code&gt;code_challenge&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;diagram-describing-csrf-attack-flow&quot;&gt;Diagram describing CSRF attack flow&lt;a class=&quot;zola-anchor&quot; href=&quot;#diagram-describing-csrf-attack-flow&quot; aria-label=&quot;Anchor link for: diagram-describing-csrf-attack-flow&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;TODO CSRF ATTACK DIAGRAM&lt;&#x2F;p&gt;
+&lt;p&gt;Also, some mobile operating systems allow registering multiple handlers for the same deeplink allowing malicious handlers
+catch the &lt;code&gt;authorization_code&lt;&#x2F;code&gt; and thanks to &lt;code&gt;PKCE&lt;&#x2F;code&gt; this attack vector becomes useless.&lt;&#x2F;p&gt;
+&lt;p&gt;Now, as we established the definition of &lt;code&gt;public_client&lt;&#x2F;code&gt; with the &lt;code&gt;none&lt;&#x2F;code&gt; client authentication method along with &lt;code&gt;PKCE&lt;&#x2F;code&gt;
+extension, we can think whats next.&lt;&#x2F;p&gt;
+&lt;p&gt;Token Endpoint is capable of returning not only &lt;code&gt;access_token&lt;&#x2F;code&gt; but &lt;code&gt;refresh_token&lt;&#x2F;code&gt; too and the latter one is nuanced
+for &lt;code&gt;public_clients&lt;&#x2F;code&gt;. As previously said &lt;code&gt;public_clients&lt;&#x2F;code&gt; are not safe to store secrets and &lt;code&gt;refresh_token&lt;&#x2F;code&gt; in this case
+is also the one that should not be leaked to the malicious users.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;solutions&quot;&gt;Solutions&lt;a class=&quot;zola-anchor&quot; href=&quot;#solutions&quot; aria-label=&quot;Anchor link for: solutions&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;To deal with this obstacle there are numerous strategies, in order of security guarantees:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;no refresh token;&lt;&#x2F;p&gt;
+&lt;p&gt;Security Requirements:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;OAuth server MUST support CORS in headers&lt;&#x2F;li&gt;
+&lt;li&gt;OAuth server MUST require absolute &lt;code&gt;redirect_uri&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;authorization_code&lt;&#x2F;code&gt; grant type MUST be protected using PKCE&lt;&#x2F;li&gt;
+&lt;li&gt;Clients MUST enforce PKCE flow&lt;&#x2F;li&gt;
+&lt;li&gt;Clients MUST protect from CSRF using &lt;code&gt;state&lt;&#x2F;code&gt; parameter and PKCE&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Client should use iframe in which it will send oauth authorization requests along with a cookie that was issued on
+initial successful authentication via Authorization Server, this way use will 
+It is similar to how firebase work which is discussed in this article.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;use &lt;code&gt;refresh_tokens&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Security Requirements:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;MUST either &amp;quot;rotate&amp;quot; refresh token OR use &amp;quot;sender-constrained&amp;quot; tokens&lt;&#x2F;li&gt;
+&lt;li&gt;MUST either set a maximum lifetime OR expire if the refresh token has not been used within a specific amount
+of time&lt;&#x2F;li&gt;
+&lt;li&gt;MUST NOT extend the lifetime of the new refresh token beyond the lifetime of the initial refresh token&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;use sender constrained refresh tokens:&lt;&#x2F;p&gt;
+&lt;p&gt;The main idea is to bind OAuth issued tokens to clients, restricting malicious users reusing them.&lt;br &#x2F;&gt;
+There are different RFCs describing the possible implementations:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;RFC-8705: Mutual TLS Client Authentication and Certificate bound access tokens&lt;&#x2F;p&gt;
+&lt;p&gt;It uses hash of the client certificate used during TLS handshake.&lt;br &#x2F;&gt;
+This way access and refresh tokens are bound to the client certificate and if it differs from one that was
+initially negotiated then further access to resources or token refreshed will be restricted.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;OAuth 2.0 Demonstrating Proof-of-Posession at the Application Layer &lt;strong&gt;(Draft)&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;OAuth 2.0 Token binding &lt;strong&gt;(Draft)&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;use short-lived refresh tokens that are updated on each token refresh request;&lt;&#x2F;p&gt;
+&lt;p&gt;but it allows malicious users to catch the token and successfully use it up to the lifetime of the
+accessToken.&lt;&#x2F;p&gt;
+&lt;p&gt;lets&#x27; say accessToken has 15 minutes lifetime and the refreshToken is 1 hour.&lt;&#x2F;p&gt;
+&lt;p&gt;if malicious client catches tokens at any point of time, he is able to use them for 15 minutes and as soon as
+malicious user initiates refreshToken OAuth server will know there was a breach issuing the complete
+authentication flow for the legitimate client.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;alternatives&quot;&gt;Alternatives&lt;a class=&quot;zola-anchor&quot; href=&quot;#alternatives&quot; aria-label=&quot;Anchor link for: alternatives&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;More traditional solution that requires a bit more effort would be to use backend for frontend that performs OAuth
+flows and stores the tokens and secrets in &amp;quot;secure&amp;quot; storage, as it is done in the beginning of the article, &lt;a href=&quot;https:&#x2F;&#x2F;yneth.github.io&#x2F;blog&#x2F;refresh-for-public-clients&#x2F;#authorization_code_flow_webserver&quot;&gt;see&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;div class=&quot;note&quot;&gt;
+NOTE: Client is used as &quot;backend for frontend&quot;.
+&lt;&#x2F;div&gt;
+&lt;p&gt;Security Requirements:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Client MUST be registered as a &amp;quot;confidential client&amp;quot;&lt;&#x2F;li&gt;
+&lt;li&gt;Clients store the access token and refresh token in the &amp;quot;secure&amp;quot; server environment&lt;&#x2F;li&gt;
+&lt;li&gt;Clients SHOULD implement PKCE and Authorization Servers MUST enforece PKCE, if used or cofigured&lt;&#x2F;li&gt;
+&lt;li&gt;Clients MUST protect aginst CSRF using state or nonce parameter&lt;&#x2F;li&gt;
+&lt;li&gt;The server establishes a session between the frontend and backend using a session cookie with the &amp;quot;HttpOnly&amp;quot;
+and &amp;quot;secure&amp;quot; attributes set&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;tldr&quot;&gt;TLDR&lt;a class=&quot;zola-anchor&quot; href=&quot;#tldr&quot; aria-label=&quot;Anchor link for: tldr&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;ul&gt;
+&lt;li&gt;the more security guarantees the better&lt;&#x2F;li&gt;
+&lt;li&gt;always use PKCE even in the backend for frontend solution&lt;&#x2F;li&gt;
+&lt;li&gt;always use &lt;code&gt;nonce&lt;&#x2F;code&gt; or &lt;code&gt;state&lt;&#x2F;code&gt; to prevent CSRF&lt;&#x2F;li&gt;
+&lt;li&gt;exact matching of redirect URIs&lt;&#x2F;li&gt;
+&lt;li&gt;enforce https in the redirect URIs&lt;&#x2F;li&gt;
+&lt;li&gt;do not use &lt;code&gt;implicit_grant&lt;&#x2F;code&gt; authorisation flow&lt;&#x2F;li&gt;
+&lt;li&gt;when issuing refresh tokens to public clients:
+&lt;ul&gt;
+&lt;li&gt;MUST rotate or bind refresh tokens to the clients&lt;&#x2F;li&gt;
+&lt;li&gt;MUST limit the lifetime of the refresh token  &lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+    </channel>
+</rss>

@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Yneth Blog - architecture</title>
+      <link>https://yneth.github.io</link>
+      <description>Yneth blog</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://yneth.github.io/tags/architecture/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Mon, 30 Jan 2023 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>System Design template</title>
+          <pubDate>Mon, 30 Jan 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://yneth.github.io/blog/system-design-outline/</link>
+          <guid>https://yneth.github.io/blog/system-design-outline/</guid>
+          <description xml:base="https://yneth.github.io/blog/system-design-outline/">&lt;p&gt;When dealing with System Design it is important to have some outline.
+The one described in the article is commonly used in FAANG interviews. 
+Although it is useful to use the same approach when writing HLDs for 
+your new features on the daily job basis.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;functional-requirements&quot;&gt;Functional requirements&lt;a class=&quot;zola-anchor&quot; href=&quot;#functional-requirements&quot; aria-label=&quot;Anchor link for: functional-requirements&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;This part defines the feature to be implemented. When working on a project
+those will become your tasks. On the interview it is trickier, as 
+interviewer may want to see your capability to decompose the problem and 
+ask clarifying questions. &lt;&#x2F;p&gt;
+&lt;p&gt;Nice to ask questions:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;What are the features?
+&lt;ul&gt;
+&lt;li&gt;For easier definitions you could use &lt;code&gt;UserStory&lt;&#x2F;code&gt; approach.&lt;br &#x2F;&gt;
+Template:&lt;br &#x2F;&gt;
+As a &lt;code&gt;&amp;lt;role&amp;gt;&lt;&#x2F;code&gt;, I want &lt;code&gt;&amp;lt;goal&amp;gt;&lt;&#x2F;code&gt; so that &lt;code&gt;&amp;lt;reason&amp;gt;&lt;&#x2F;code&gt;.&lt;br &#x2F;&gt;
+Example:&lt;br &#x2F;&gt;
+As a User I want to have form where I can upload video stories to share it with my friends.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;What problem does it solve?
+&lt;ul&gt;
+&lt;li&gt;Are there any existing solutions?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Who is the target audience?&lt;&#x2F;li&gt;
+&lt;li&gt;How is it going to be monetised?&lt;&#x2F;li&gt;
+&lt;li&gt;Business KPIs to measure success&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;non-functional-requirements&quot;&gt;Non-Functional requirements&lt;a class=&quot;zola-anchor&quot; href=&quot;#non-functional-requirements&quot; aria-label=&quot;Anchor link for: non-functional-requirements&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Then, when you know what to be developed, you need to specify the &lt;code&gt;*-ilites&lt;&#x2F;code&gt; of the system.&lt;br &#x2F;&gt;
+This step will help you to make decisions on how to design the system knowing its expected
+scale, uptime, data storage and security requirements.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Durability (can data be lost?)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;as a User I want my data to not be lost, so I could access it later.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Fault-tolerant (what if something goes wrong&#x2F;down?)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;as a CTO I want the system to be resilient such that users will have the best experience with a system and
+for system to be self recoverable&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Scalable (is it possible to scale horizontally? what are the benefits of vertical scaling?)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;as a CTO I want the system to be easy to scale such that in case of user increase, system can be scaled
+without additional issues.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Highly available (how to set up? what are the properties within CAP theorem)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;do not forget the desired SLA in percentiles&lt;&#x2F;li&gt;
+&lt;li&gt;as a user I want system to be available 99.99 percent of time&lt;&#x2F;li&gt;
+&lt;li&gt;for distributed architecture it should affect
+&lt;ul&gt;
+&lt;li&gt;type of storage and what kind of guarantees it can give&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Modularity&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Property of the system such that some functionality can easily be used without affecting others.&lt;&#x2F;li&gt;
+&lt;li&gt;It can be a significant performance improvement for example to separate services by read and write
+applications improving overall availability and scalability of the system&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Responsive | Low latency&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;As a user I want it to respond very fast so I could check stories of my friends without waiting.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Security &lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;STRIDE_(security)&quot;&gt;(Stride)&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Spoofing (Authenticity)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Can someone pretend to be someone else?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Tampering (Integrity)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Can I modify the request parameters to get different behavior?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Repudiation (Non-reputability)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Can someone deny the performed this action?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Information disclosure (Confidentiality)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Users obtaining more information than they are allowed to. What information could get exposed to this
+asset, what&#x27;s contained in database?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;DoS (Availability)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Some actions could result in DoS, through spamming actions that require a lot of resources or result
+in quota limits.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Elevation of Privilege (Authorization)&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Users obtaining more permissions than they are allowed to. Typical way to resolve is to use as little
+permissions as possible, to minimise the attack vector&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;capacity-estimation&quot;&gt;Capacity Estimation&lt;a class=&quot;zola-anchor&quot; href=&quot;#capacity-estimation&quot; aria-label=&quot;Anchor link for: capacity-estimation&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;This step helps to answer questions:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;what are the storage requirements?&lt;&#x2F;li&gt;
+&lt;li&gt;what is the expected volume of data?&lt;&#x2F;li&gt;
+&lt;li&gt;how many cache nodes to use?&lt;&#x2F;li&gt;
+&lt;li&gt;can be used for cost counting&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;It is better to define in the following order:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Load&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;QPS&lt;&#x2F;code&gt; - queries per second, as if how many times user want to ask system a specific question
+or to do specific task.&lt;&#x2F;p&gt;
+&lt;p&gt;It is calculated using the next formula:&lt;br &#x2F;&gt;
+&lt;code&gt;QPS&lt;&#x2F;code&gt; = &lt;code&gt;DAU&lt;&#x2F;code&gt; * &lt;code&gt;AVG_QUERIES_PER_DAY&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;RPS&lt;&#x2F;code&gt; - requests per second, referring to actual count of http requests.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Example, describing the difference between &lt;code&gt;QPS&lt;&#x2F;code&gt; and &lt;code&gt;RPS&lt;&#x2F;code&gt;:
+if we take google search as our target system to calculate QPS and RPS then
+&lt;code&gt;QPS&lt;&#x2F;code&gt; would be a measure of how many searches are done per second,
+meaning that our query is the search.
+&lt;code&gt;RPS&lt;&#x2F;code&gt; would be a measure of requests done to the system, and it would also include
+suggestion, static asset and other requests, thus it is always greater or equal to &lt;code&gt;QPS&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Storage&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;how your model looks like? calculate the size in bytes.&lt;&#x2F;li&gt;
+&lt;li&gt;how much storage will it take?
+&lt;ul&gt;
+&lt;li&gt;for one day&lt;&#x2F;li&gt;
+&lt;li&gt;for one month&lt;&#x2F;li&gt;
+&lt;li&gt;for 5 years&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Cache requirements&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;how much GB per day?&lt;&#x2F;li&gt;
+&lt;li&gt;how many machines needed to store your cache?
+&lt;ul&gt;
+&lt;li&gt;for example, you have 3TB of cache&lt;br &#x2F;&gt;
+and single machine is able to store 150GB&lt;br &#x2F;&gt;
+then you would need 20 servers to handle the load&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;high-level-design&quot;&gt;High Level Design&lt;a class=&quot;zola-anchor&quot; href=&quot;#high-level-design&quot; aria-label=&quot;Anchor link for: high-level-design&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Here you should create a diagram of the system noting the functional and non-functional requirements specified
+beforehand.&lt;&#x2F;p&gt;
+&lt;p&gt;Do not forget to note places where you&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;sacrifice consistency over availability;&lt;&#x2F;li&gt;
+&lt;li&gt;show the weakest spots and how to resolve them;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;api-design&quot;&gt;API Design&lt;a class=&quot;zola-anchor&quot; href=&quot;#api-design&quot; aria-label=&quot;Anchor link for: api-design&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Describe the APIs you are going to design.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;What protocol are you using?
+&lt;ul&gt;
+&lt;li&gt;HTTP | REST&lt;&#x2F;li&gt;
+&lt;li&gt;RPC | gRPC&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Sync or async? long polling vs polling?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;numbers-all-developers-should-know&quot;&gt;Numbers all developers should know&lt;a class=&quot;zola-anchor&quot; href=&quot;#numbers-all-developers-should-know&quot; aria-label=&quot;Anchor link for: numbers-all-developers-should-know&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;h2 id=&quot;power-of-two&quot;&gt;Power of two&lt;a class=&quot;zola-anchor&quot; href=&quot;#power-of-two&quot; aria-label=&quot;Anchor link for: power-of-two&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;hr &#x2F;&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;text-align: center&quot;&gt;POWER&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;APPROXIMATE VALUE&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;FULL NAME&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: center&quot;&gt;SHORT NAME&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: center&quot;&gt;10&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 thousand&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 Kilobyte&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: center&quot;&gt;1 KB&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: center&quot;&gt;20&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 million&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 Megabyte&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: center&quot;&gt;1 MB&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: center&quot;&gt;30&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 billion&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 Gigabyte&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: center&quot;&gt;1 GB&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: center&quot;&gt;40&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 trillion&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 Terabyte&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: center&quot;&gt;1 TB&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: center&quot;&gt;50&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 quadrillion&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1 Petabyte&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: center&quot;&gt;1 PB&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;hr &#x2F;&gt;
+&lt;h2 id=&quot;latency-numbers&quot;&gt;Latency numbers&lt;a class=&quot;zola-anchor&quot; href=&quot;#latency-numbers&quot; aria-label=&quot;Anchor link for: latency-numbers&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;hr &#x2F;&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;text-align: left&quot;&gt;OPERATION NAME&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;TIME&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;L1 cache reference&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;0.5 ns&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Branch mis-predict&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;5 ns&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;L2 cache reference&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;7 ns&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Mutex lock&#x2F;unlock&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;100 ns&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Main memory reference&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;100 ns&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Compress 1K bytes with Zippy&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;10_000 ns&lt;&#x2F;code&gt;  = &lt;code&gt;10 µs&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Send 2K bytes over 1 Gbps network&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;20_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;20 µs&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Read 1MB sequentially from memory&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;250_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;250 µs&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Roundtrip within the same datacenter&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;500_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;500 µs&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Disk seek&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;10_000_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;10ms&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Read 1MB sequentially from the network&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;10_000_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;10 ms&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Read 1MB sequentially from disk&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;30_000_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;30 ms&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;Send packet CA (California) -&amp;gt;Netherlands-&amp;gt;CA&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;150_000_000 ns&lt;&#x2F;code&gt; = &lt;code&gt;150 ms&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;Taken from &lt;a href=&quot;https:&#x2F;&#x2F;colin-scott.github.io&#x2F;personal_website&#x2F;research&#x2F;interactive_latency.html&quot;&gt;Calculator per year by google developer&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;availability-numbers&quot;&gt;Availability numbers&lt;a class=&quot;zola-anchor&quot; href=&quot;#availability-numbers&quot; aria-label=&quot;Anchor link for: availability-numbers&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;div class=&quot;overflow-x-auto&quot;&gt;
+&lt;hr &#x2F;&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;text-align: left&quot;&gt;Availability %&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Downtime per day&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Downtime per week&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Downtime per month&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Downtime per year&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;99%&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;14.40 minutes&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1.68 hours&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;7.31 hours&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;3.65 days&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;99.99%&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;8.64 seconds&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1.01 minutes&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;4.38 minutes&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;52.6 minutes&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;99.999%&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;864 ms&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;6.05 seconds&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;26.30 seconds&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;5.26 minutes&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;99.9999%&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;86.40 ms&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;604.8 ms&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;2.64 seconds&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;31.56 seconds&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;hr &#x2F;&gt;
+&lt;&#x2F;div&gt;
+&lt;h1 id=&quot;tips&quot;&gt;Tips&lt;a class=&quot;zola-anchor&quot; href=&quot;#tips&quot; aria-label=&quot;Anchor link for: tips&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Back-of-the-envelope estimation is all about the process. Solving the problem is more important than obtaining
+results. Interviewers may test your problem-solving skills. Here are a few tips to follow:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Rounding and Approximation. It is difficult to perform complicated math operations during the interview. For
+example, what is the result of “99987 &#x2F; 9.1”? There is no need to spend valuable time to solve complicated math
+problems. Precision is not expected. Use round numbers and approximation to your advantage. The division question
+can be simplified as follows: “100,000 &#x2F; 10”.&lt;&#x2F;li&gt;
+&lt;li&gt;Write down your assumptions. It is a good idea to write down your assumptions to be referenced later.&lt;&#x2F;li&gt;
+&lt;li&gt;Label your units. When you write down “5”, does it mean 5 KB or 5 MB? You might confuse yourself with this. Write
+down the units because “5 MB” helps to remove ambiguity.&lt;&#x2F;li&gt;
+&lt;li&gt;Commonly asked back-of-the-envelope estimations: QPS, peak QPS, storage, cache, number of servers, etc. You can
+practice these calculations when preparing for an interview. Practice makes perfect.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;references&quot;&gt;References&lt;a class=&quot;zola-anchor&quot; href=&quot;#references&quot; aria-label=&quot;Anchor link for: references&quot;&gt;🔗&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;itsallbinary.com&#x2F;system-design-back-of-envelop-calculations-for-storage-size-bandwidth-traffic-etc-estimates&quot;&gt;https:&#x2F;&#x2F;itsallbinary.com&#x2F;system-design-back-of-envelop-calculations-for-storage-size-bandwidth-traffic-etc-estimates&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;aaronice.gitbook.io&#x2F;system-design&#x2F;system-design-systematic-approach&quot;&gt;https:&#x2F;&#x2F;aaronice.gitbook.io&#x2F;system-design&#x2F;system-design-systematic-approach&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;gist.github.com&#x2F;vasanthk&#x2F;485d1c25737e8e72759f&quot;&gt;https:&#x2F;&#x2F;gist.github.com&#x2F;vasanthk&#x2F;485d1c25737e8e72759f&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;matthewdbill.medium.com&#x2F;back-of-envelope-calculations-cheat-sheet-d6758d276b05&quot;&gt;https:&#x2F;&#x2F;matthewdbill.medium.com&#x2F;back-of-envelope-calculations-cheat-sheet-d6758d276b05&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;!!! &lt;a href=&quot;https:&#x2F;&#x2F;blog.junianto.com&#x2F;2022&#x2F;06&#x2F;28&#x2F;back-of-the-envelope-estimation&#x2F;&quot;&gt;https:&#x2F;&#x2F;blog.junianto.com&#x2F;2022&#x2F;06&#x2F;28&#x2F;back-of-the-envelope-estimation&#x2F;&lt;&#x2F;a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;http:&#x2F;&#x2F;highscalability.com&#x2F;blog&#x2F;2011&#x2F;1&#x2F;26&#x2F;google-pro-tip-use-back-of-the-envelope-calculations-to-choo.html&quot;&gt;http:&#x2F;&#x2F;highscalability.com&#x2F;blog&#x2F;2011&#x2F;1&#x2F;26&#x2F;google-pro-tip-use-back-of-the-envelope-calculations-to-choo.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;donnemartin&#x2F;system-design-primer&quot;&gt;https:&#x2F;&#x2F;github.com&#x2F;donnemartin&#x2F;system-design-primer&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;colin-scott.github.io&#x2F;personal_website&#x2F;research&#x2F;interactive_latency.html&quot;&gt;https:&#x2F;&#x2F;colin-scott.github.io&#x2F;personal_website&#x2F;research&#x2F;interactive_latency.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;aws.amazon.com&#x2F;compute&#x2F;sla&#x2F;&quot;&gt;https:&#x2F;&#x2F;aws.amazon.com&#x2F;compute&#x2F;sla&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;cloud.google.com&#x2F;compute&#x2F;sla&quot;&gt;https:&#x2F;&#x2F;cloud.google.com&#x2F;compute&#x2F;sla&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;azure.microsoft.com&#x2F;en-us&#x2F;support&#x2F;legal&#x2F;sla&#x2F;summary&#x2F;&quot;&gt;https:&#x2F;&#x2F;azure.microsoft.com&#x2F;en-us&#x2F;support&#x2F;legal&#x2F;sla&#x2F;summary&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+    </channel>
+</rss>

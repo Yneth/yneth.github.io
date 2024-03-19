@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<head>
+    <meta charset="UTF-8">
+    <title>System Design template</title>
+    <meta name="description" content="">
+
+    <meta name=”robots” content="index, follow">
+    <link rel="canonical" href="https:&#x2F;&#x2F;yneth.github.io&#x2F;blog&#x2F;system-design-outline&#x2F;">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="author" content="Anthony (Yneth)">
+
+    <meta property="og:title" content="System Design template">
+    <meta property="og:description"
+          content="">
+    
+    
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="System Design template">
+    <meta name="twitter:description"
+          content="">
+    
+
+    <link rel="stylesheet" href="https://yneth.github.io/styles.css?h=a58ef5aef352a232cf15"/>
+
+    <link rel="shortcut icon" type="image/png" href="https://yneth.github.io/favicon.png"/>
+    <link href="https://yneth.github.io/rss.xml" rel="feed" type="application/rss+xml" title="Yneth Blog"/>
+
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            'gtm.start':
+                new Date().getTime(), event: 'gtm.js'
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-5G27JJJ');</script>
+    <!-- End Google Tag Manager -->
+</head>
+
+
+<body class="flex flex-col min-h-screen p-4">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5G27JJJ"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<header class="flex flex-col justify-between px-4 md:h-16 md:flex-row">
+
+    <h1 class="py-4 text-xl text-center">
+        <a class="text-black" href="/">Yneth</a>
+    </h1>
+
+    <ul class="mt-2 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4 items-center justify-around">
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/snippets/">Snippets</a></li>
+        <li><a href="/tags/">Tags</a></li>
+    </ul>
+
+</header>
+
+<main class="grow flex flex-col items-center h-full">
+    
+    <article class="md:w-[48em] border-1 border-y border-black mt-8 py-2 w-full grow whitespace-normal">
+        <h1>System Design template</h1>
+        <div>
+            2023-01-30
+            
+        </div>
+
+        <hr/>
+
+        
+            <ul class="flex flex-row flex-wrap gap-x-2">
+                
+                    <li><a href="https://yneth.github.io/tags/system-design/">#system_design</a></li>
+                
+                    <li><a href="https://yneth.github.io/tags/interview/">#interview</a></li>
+                
+                    <li><a href="https://yneth.github.io/tags/architecture/">#architecture</a></li>
+                
+            </ul>
+        
+
+        <div class="article__content mt-4">
+            <p>When dealing with System Design it is important to have some outline.
+The one described in the article is commonly used in FAANG interviews. 
+Although it is useful to use the same approach when writing HLDs for 
+your new features on the daily job basis.</p>
+<h1 id="functional-requirements">Functional requirements<a class="zola-anchor" href="#functional-requirements" aria-label="Anchor link for: functional-requirements">🔗</a></h1>
+<p>This part defines the feature to be implemented. When working on a project
+those will become your tasks. On the interview it is trickier, as 
+interviewer may want to see your capability to decompose the problem and 
+ask clarifying questions. </p>
+<p>Nice to ask questions:</p>
+<ul>
+<li>What are the features?
+<ul>
+<li>For easier definitions you could use <code>UserStory</code> approach.<br />
+Template:<br />
+As a <code>&lt;role&gt;</code>, I want <code>&lt;goal&gt;</code> so that <code>&lt;reason&gt;</code>.<br />
+Example:<br />
+As a User I want to have form where I can upload video stories to share it with my friends.</li>
+</ul>
+</li>
+<li>What problem does it solve?
+<ul>
+<li>Are there any existing solutions?</li>
+</ul>
+</li>
+<li>Who is the target audience?</li>
+<li>How is it going to be monetised?</li>
+<li>Business KPIs to measure success</li>
+</ul>
+<h1 id="non-functional-requirements">Non-Functional requirements<a class="zola-anchor" href="#non-functional-requirements" aria-label="Anchor link for: non-functional-requirements">🔗</a></h1>
+<p>Then, when you know what to be developed, you need to specify the <code>*-ilites</code> of the system.<br />
+This step will help you to make decisions on how to design the system knowing its expected
+scale, uptime, data storage and security requirements.</p>
+<ul>
+<li>
+<p>Durability (can data be lost?)</p>
+<ul>
+<li>as a User I want my data to not be lost, so I could access it later.</li>
+</ul>
+</li>
+<li>
+<p>Fault-tolerant (what if something goes wrong/down?)</p>
+<ul>
+<li>as a CTO I want the system to be resilient such that users will have the best experience with a system and
+for system to be self recoverable</li>
+</ul>
+</li>
+<li>
+<p>Scalable (is it possible to scale horizontally? what are the benefits of vertical scaling?)</p>
+<ul>
+<li>as a CTO I want the system to be easy to scale such that in case of user increase, system can be scaled
+without additional issues.</li>
+</ul>
+</li>
+<li>
+<p>Highly available (how to set up? what are the properties within CAP theorem)</p>
+<ul>
+<li>do not forget the desired SLA in percentiles</li>
+<li>as a user I want system to be available 99.99 percent of time</li>
+<li>for distributed architecture it should affect
+<ul>
+<li>type of storage and what kind of guarantees it can give</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Modularity</p>
+<ul>
+<li>Property of the system such that some functionality can easily be used without affecting others.</li>
+<li>It can be a significant performance improvement for example to separate services by read and write
+applications improving overall availability and scalability of the system</li>
+</ul>
+</li>
+<li>
+<p>Responsive | Low latency</p>
+<ul>
+<li>As a user I want it to respond very fast so I could check stories of my friends without waiting.</li>
+</ul>
+</li>
+<li>
+<p>Security <a href="https://en.wikipedia.org/wiki/STRIDE_(security)">(Stride)</a></p>
+<ul>
+<li>
+<p>Spoofing (Authenticity)</p>
+<ul>
+<li>Can someone pretend to be someone else?</li>
+</ul>
+</li>
+<li>
+<p>Tampering (Integrity)</p>
+<ul>
+<li>Can I modify the request parameters to get different behavior?</li>
+</ul>
+</li>
+<li>
+<p>Repudiation (Non-reputability)</p>
+<ul>
+<li>Can someone deny the performed this action?</li>
+</ul>
+</li>
+<li>
+<p>Information disclosure (Confidentiality)</p>
+<ul>
+<li>Users obtaining more information than they are allowed to. What information could get exposed to this
+asset, what's contained in database?</li>
+</ul>
+</li>
+<li>
+<p>DoS (Availability)</p>
+<ul>
+<li>Some actions could result in DoS, through spamming actions that require a lot of resources or result
+in quota limits.</li>
+</ul>
+</li>
+<li>
+<p>Elevation of Privilege (Authorization)</p>
+<ul>
+<li>Users obtaining more permissions than they are allowed to. Typical way to resolve is to use as little
+permissions as possible, to minimise the attack vector</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="capacity-estimation">Capacity Estimation<a class="zola-anchor" href="#capacity-estimation" aria-label="Anchor link for: capacity-estimation">🔗</a></h1>
+<p>This step helps to answer questions:</p>
+<ul>
+<li>what are the storage requirements?</li>
+<li>what is the expected volume of data?</li>
+<li>how many cache nodes to use?</li>
+<li>can be used for cost counting</li>
+</ul>
+<p>It is better to define in the following order:</p>
+<ul>
+<li>
+<p>Load</p>
+<ul>
+<li>
+<p><code>QPS</code> - queries per second, as if how many times user want to ask system a specific question
+or to do specific task.</p>
+<p>It is calculated using the next formula:<br />
+<code>QPS</code> = <code>DAU</code> * <code>AVG_QUERIES_PER_DAY</code></p>
+</li>
+<li>
+<p><code>RPS</code> - requests per second, referring to actual count of http requests.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>Example, describing the difference between <code>QPS</code> and <code>RPS</code>:
+if we take google search as our target system to calculate QPS and RPS then
+<code>QPS</code> would be a measure of how many searches are done per second,
+meaning that our query is the search.
+<code>RPS</code> would be a measure of requests done to the system, and it would also include
+suggestion, static asset and other requests, thus it is always greater or equal to <code>QPS</code>.</p>
+<ul>
+<li>
+<p>Storage</p>
+<ul>
+<li>how your model looks like? calculate the size in bytes.</li>
+<li>how much storage will it take?
+<ul>
+<li>for one day</li>
+<li>for one month</li>
+<li>for 5 years</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Cache requirements</p>
+<ul>
+<li>how much GB per day?</li>
+<li>how many machines needed to store your cache?
+<ul>
+<li>for example, you have 3TB of cache<br />
+and single machine is able to store 150GB<br />
+then you would need 20 servers to handle the load</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="high-level-design">High Level Design<a class="zola-anchor" href="#high-level-design" aria-label="Anchor link for: high-level-design">🔗</a></h1>
+<p>Here you should create a diagram of the system noting the functional and non-functional requirements specified
+beforehand.</p>
+<p>Do not forget to note places where you</p>
+<ul>
+<li>sacrifice consistency over availability;</li>
+<li>show the weakest spots and how to resolve them;</li>
+</ul>
+<h1 id="api-design">API Design<a class="zola-anchor" href="#api-design" aria-label="Anchor link for: api-design">🔗</a></h1>
+<p>Describe the APIs you are going to design.</p>
+<ul>
+<li>What protocol are you using?
+<ul>
+<li>HTTP | REST</li>
+<li>RPC | gRPC</li>
+</ul>
+</li>
+<li>Sync or async? long polling vs polling?</li>
+</ul>
+<h1 id="numbers-all-developers-should-know">Numbers all developers should know<a class="zola-anchor" href="#numbers-all-developers-should-know" aria-label="Anchor link for: numbers-all-developers-should-know">🔗</a></h1>
+<h2 id="power-of-two">Power of two<a class="zola-anchor" href="#power-of-two" aria-label="Anchor link for: power-of-two">🔗</a></h2>
+<hr />
+<table><thead><tr><th style="text-align: center">POWER</th><th style="text-align: left">APPROXIMATE VALUE</th><th style="text-align: left">FULL NAME</th><th style="text-align: center">SHORT NAME</th></tr></thead><tbody>
+<tr><td style="text-align: center">10</td><td style="text-align: left">1 thousand</td><td style="text-align: left">1 Kilobyte</td><td style="text-align: center">1 KB</td></tr>
+<tr><td style="text-align: center">20</td><td style="text-align: left">1 million</td><td style="text-align: left">1 Megabyte</td><td style="text-align: center">1 MB</td></tr>
+<tr><td style="text-align: center">30</td><td style="text-align: left">1 billion</td><td style="text-align: left">1 Gigabyte</td><td style="text-align: center">1 GB</td></tr>
+<tr><td style="text-align: center">40</td><td style="text-align: left">1 trillion</td><td style="text-align: left">1 Terabyte</td><td style="text-align: center">1 TB</td></tr>
+<tr><td style="text-align: center">50</td><td style="text-align: left">1 quadrillion</td><td style="text-align: left">1 Petabyte</td><td style="text-align: center">1 PB</td></tr>
+</tbody></table>
+<hr />
+<h2 id="latency-numbers">Latency numbers<a class="zola-anchor" href="#latency-numbers" aria-label="Anchor link for: latency-numbers">🔗</a></h2>
+<hr />
+<table><thead><tr><th style="text-align: left">OPERATION NAME</th><th style="text-align: left">TIME</th></tr></thead><tbody>
+<tr><td style="text-align: left">L1 cache reference</td><td style="text-align: left"><code>0.5 ns</code></td></tr>
+<tr><td style="text-align: left">Branch mis-predict</td><td style="text-align: left"><code>5 ns</code></td></tr>
+<tr><td style="text-align: left">L2 cache reference</td><td style="text-align: left"><code>7 ns</code></td></tr>
+<tr><td style="text-align: left">Mutex lock/unlock</td><td style="text-align: left"><code>100 ns</code></td></tr>
+<tr><td style="text-align: left">Main memory reference</td><td style="text-align: left"><code>100 ns</code></td></tr>
+<tr><td style="text-align: left">Compress 1K bytes with Zippy</td><td style="text-align: left"><code>10_000 ns</code>  = <code>10 µs</code></td></tr>
+<tr><td style="text-align: left">Send 2K bytes over 1 Gbps network</td><td style="text-align: left"><code>20_000 ns</code> = <code>20 µs</code></td></tr>
+<tr><td style="text-align: left">Read 1MB sequentially from memory</td><td style="text-align: left"><code>250_000 ns</code> = <code>250 µs</code></td></tr>
+<tr><td style="text-align: left">Roundtrip within the same datacenter</td><td style="text-align: left"><code>500_000 ns</code> = <code>500 µs</code></td></tr>
+<tr><td style="text-align: left">Disk seek</td><td style="text-align: left"><code>10_000_000 ns</code> = <code>10ms</code></td></tr>
+<tr><td style="text-align: left">Read 1MB sequentially from the network</td><td style="text-align: left"><code>10_000_000 ns</code> = <code>10 ms</code></td></tr>
+<tr><td style="text-align: left">Read 1MB sequentially from disk</td><td style="text-align: left"><code>30_000_000 ns</code> = <code>30 ms</code></td></tr>
+<tr><td style="text-align: left">Send packet CA (California) -&gt;Netherlands-&gt;CA</td><td style="text-align: left"><code>150_000_000 ns</code> = <code>150 ms</code></td></tr>
+</tbody></table>
+<hr />
+<p>Taken from <a href="https://colin-scott.github.io/personal_website/research/interactive_latency.html">Calculator per year by google developer</a></p>
+<h2 id="availability-numbers">Availability numbers<a class="zola-anchor" href="#availability-numbers" aria-label="Anchor link for: availability-numbers">🔗</a></h2>
+<div class="overflow-x-auto">
+<hr />
+<table><thead><tr><th style="text-align: left">Availability %</th><th style="text-align: left">Downtime per day</th><th style="text-align: left">Downtime per week</th><th style="text-align: left">Downtime per month</th><th style="text-align: left">Downtime per year</th></tr></thead><tbody>
+<tr><td style="text-align: left">99%</td><td style="text-align: left">14.40 minutes</td><td style="text-align: left">1.68 hours</td><td style="text-align: left">7.31 hours</td><td style="text-align: left">3.65 days</td></tr>
+<tr><td style="text-align: left">99.99%</td><td style="text-align: left">8.64 seconds</td><td style="text-align: left">1.01 minutes</td><td style="text-align: left">4.38 minutes</td><td style="text-align: left">52.6 minutes</td></tr>
+<tr><td style="text-align: left">99.999%</td><td style="text-align: left">864 ms</td><td style="text-align: left">6.05 seconds</td><td style="text-align: left">26.30 seconds</td><td style="text-align: left">5.26 minutes</td></tr>
+<tr><td style="text-align: left">99.9999%</td><td style="text-align: left">86.40 ms</td><td style="text-align: left">604.8 ms</td><td style="text-align: left">2.64 seconds</td><td style="text-align: left">31.56 seconds</td></tr>
+</tbody></table>
+<hr />
+</div>
+<h1 id="tips">Tips<a class="zola-anchor" href="#tips" aria-label="Anchor link for: tips">🔗</a></h1>
+<p>Back-of-the-envelope estimation is all about the process. Solving the problem is more important than obtaining
+results. Interviewers may test your problem-solving skills. Here are a few tips to follow:</p>
+<ul>
+<li>Rounding and Approximation. It is difficult to perform complicated math operations during the interview. For
+example, what is the result of “99987 / 9.1”? There is no need to spend valuable time to solve complicated math
+problems. Precision is not expected. Use round numbers and approximation to your advantage. The division question
+can be simplified as follows: “100,000 / 10”.</li>
+<li>Write down your assumptions. It is a good idea to write down your assumptions to be referenced later.</li>
+<li>Label your units. When you write down “5”, does it mean 5 KB or 5 MB? You might confuse yourself with this. Write
+down the units because “5 MB” helps to remove ambiguity.</li>
+<li>Commonly asked back-of-the-envelope estimations: QPS, peak QPS, storage, cache, number of servers, etc. You can
+practice these calculations when preparing for an interview. Practice makes perfect.</li>
+</ul>
+<h1 id="references">References<a class="zola-anchor" href="#references" aria-label="Anchor link for: references">🔗</a></h1>
+<ul>
+<li><a href="https://itsallbinary.com/system-design-back-of-envelop-calculations-for-storage-size-bandwidth-traffic-etc-estimates">https://itsallbinary.com/system-design-back-of-envelop-calculations-for-storage-size-bandwidth-traffic-etc-estimates</a></li>
+<li><a href="https://aaronice.gitbook.io/system-design/system-design-systematic-approach">https://aaronice.gitbook.io/system-design/system-design-systematic-approach</a></li>
+<li><a href="https://gist.github.com/vasanthk/485d1c25737e8e72759f">https://gist.github.com/vasanthk/485d1c25737e8e72759f</a></li>
+<li><a href="https://matthewdbill.medium.com/back-of-envelope-calculations-cheat-sheet-d6758d276b05">https://matthewdbill.medium.com/back-of-envelope-calculations-cheat-sheet-d6758d276b05</a></li>
+<li>!!! <a href="https://blog.junianto.com/2022/06/28/back-of-the-envelope-estimation/">https://blog.junianto.com/2022/06/28/back-of-the-envelope-estimation/</a>
+<ul>
+<li><a href="http://highscalability.com/blog/2011/1/26/google-pro-tip-use-back-of-the-envelope-calculations-to-choo.html">http://highscalability.com/blog/2011/1/26/google-pro-tip-use-back-of-the-envelope-calculations-to-choo.html</a></li>
+<li><a href="https://github.com/donnemartin/system-design-primer">https://github.com/donnemartin/system-design-primer</a></li>
+<li><a href="https://colin-scott.github.io/personal_website/research/interactive_latency.html">https://colin-scott.github.io/personal_website/research/interactive_latency.html</a></li>
+<li><a href="https://aws.amazon.com/compute/sla/">https://aws.amazon.com/compute/sla/</a></li>
+<li><a href="https://cloud.google.com/compute/sla">https://cloud.google.com/compute/sla</a></li>
+<li><a href="https://azure.microsoft.com/en-us/support/legal/sla/summary/">https://azure.microsoft.com/en-us/support/legal/sla/summary/</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+    </article>
+
+    <section class="w-full mt-8 py-2">
+        <script src="https://utteranc.es/client.js"
+                repo="yneth/yneth.github.io"
+                issue-term="pathname"
+                theme="github-light"
+                crossorigin="anonymous"
+                async>
+        </script>
+    </section>
+
+</main>
+
+</body>
+</html>
